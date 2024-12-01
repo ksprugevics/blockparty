@@ -42,7 +42,7 @@ public class LevelManager {
     }
 
     public Level getRandomLevel() {
-        return levelList.get(random.nextInt(levelList.size()));
+        return levelList.get(random.nextInt(1, levelList.size()));
     }
 
     public Level getStartingLevel() {

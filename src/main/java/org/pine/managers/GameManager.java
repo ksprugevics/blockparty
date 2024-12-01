@@ -28,7 +28,7 @@ public class GameManager {
     private static final long STARTING_TIMER_TICKS = Tick.tick().fromDuration(Duration.ofSeconds(10));
     private static final long ROUND_TIME_TICK = Tick.tick().fromDuration(Duration.ofSeconds(10));
     private static final long X_BLOCK_TIME_TICK = Tick.tick().fromDuration(Duration.ofSeconds(7));
-    private static final long SECONDS_5_TICKS = Tick.tick().fromDuration(Duration.ofSeconds(5));
+    private static final long SECONDS_3_TICKS = Tick.tick().fromDuration(Duration.ofSeconds(3));
 
     private static final Logger logger = LoggerFactory.getLogger(GameManager.class);
     private static World world;
@@ -71,11 +71,12 @@ public class GameManager {
             return;
         }
 
+        teleportAllPlayersToLobby();
+
         if (currentGameTask != null) {
             currentGameTask.cancel();
             currentGameTask = null;
         }
-
         currentState = GameState.IDLE;
     }
 
@@ -132,7 +133,7 @@ public class GameManager {
     private void processGameStateBlockRemoval() {
         platformRemoveXBlock(currentRound.getxBlock().getMaterial());
         currentState = GameState.ROUND_EVALUATION;
-        scheduleNextStateAfterDelay(SECONDS_5_TICKS);
+        scheduleNextStateAfterDelay(SECONDS_3_TICKS);
     }
 
     // todo maybe split this into more game states or methods

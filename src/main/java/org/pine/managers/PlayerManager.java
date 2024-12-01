@@ -43,4 +43,15 @@ public class PlayerManager {
             player.teleport(platformLocation);
         }
     }
+
+    public static void teleportAllPlayersToLobby() {
+        if (world == null) {
+            logger.error("Couldn't teleport player, world is null");
+            return;
+        }
+
+        for (Player player : world.getPlayers()) {
+            player.teleport(lobbyLocation);
+        }
+    }
 }

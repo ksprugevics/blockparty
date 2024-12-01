@@ -15,7 +15,7 @@ import static org.pine.managers.PlayerManager.teleportPlayerToLobby;
 
 public class PlayerEvent implements Listener {
 
-    private static final int FALL_THRESHOLD_Y = -15;
+    private static final int FALL_THRESHOLD_Y = -5;
     private static final Logger logger = LoggerFactory.getLogger(PlayerEvent.class);
     private final GameManager gameManager;
 
