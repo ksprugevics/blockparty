@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.stream.Collectors;
 
@@ -29,6 +30,10 @@ public class LevelManager {
 
     public List<Level> getLevelList() {
         return levelList;
+    }
+
+    public Level getLevelByName(String name) {
+        return levelList.stream().filter(lvl -> Objects.equals(lvl.getName(), name)).findFirst().orElse(null);
     }
 
     public String getLevelInfo() {

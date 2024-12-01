@@ -1,6 +1,7 @@
 package org.pine;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -10,9 +11,11 @@ import org.pine.event.PlayerEvent;
 import org.pine.exceptions.LevelLoadException;
 import org.pine.managers.GameManager;
 import org.pine.managers.LevelManager;
+import org.pine.model.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.pine.managers.PlatformManager.platformToPattern;
 import static org.pine.managers.UiManager.sendMessageToPlayerInChat;
 
 public class Blockparty extends JavaPlugin {
@@ -37,7 +40,16 @@ public class Blockparty extends JavaPlugin {
         if (sender instanceof Player && sender.isOp()) {   // todo better OP handling
             switch (command.getName()) {
                 case "bpstart" -> gameManager.startGame();
+                case "bpstop" -> gameManager.stopGame();
                 case "bplvlinfo" -> sendMessageToPlayerInChat((Player) sender, levelManager.getLevelInfo());
+                case "bplvl" -> {
+                    final Level lvl = levelManager.getLevelByName(args[0]);
+                    if (lvl == null) {
+                        sendMessageToPlayerInChat((Player) sender, "Level not loaded");
+                    } else {
+                        platformToPattern(lvl.getPattern());
+                    }
+                }
             }
 
             return true;

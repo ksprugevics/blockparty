@@ -8,6 +8,5 @@ public enum GameState {
     ROUND_PREPARATION,
     BLOCK_REMOVAL,
     ROUND_EVALUATION,
-    NEXT_ROUND,
     GAME_OVER
 }

@@ -9,6 +9,12 @@ commands:
   bpstart:
     description: Start the game
     usage: /bpstart
+  bpstop:
+      description: Stop the game
+      usage: /bpstop
   bplvlinfo:
     description: Gives information about the enabled levels
     usage: /bplvlinfo
+  bplvl:
+    description: Changes the map to the specified level
+    usage: /bplvl

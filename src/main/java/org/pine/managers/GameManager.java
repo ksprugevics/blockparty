@@ -17,11 +17,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.pine.managers.PlayerManager.*;
 import static org.pine.managers.UiManager.*;
 import static org.pine.managers.PlatformManager.platformRemoveXBlock;
 import static org.pine.managers.PlatformManager.platformToPattern;
-import static org.pine.managers.PlayerManager.teleportAllPlayersToPlatform;
-import static org.pine.managers.PlayerManager.teleportPlayerToLobby;
 
 public class GameManager {
 
@@ -136,15 +135,19 @@ public class GameManager {
         scheduleNextStateAfterDelay(SECONDS_5_TICKS);
     }
 
+    // todo maybe split this into more game states or methods
     private void processGameStateRoundEvaluation() {
         List<Player> roundParticipants = currentRound.getParticipants();
         roundParticipants.removeAll(roundEliminations);
         if (roundParticipants.isEmpty()) {
             broadcastTitle("Game over - tie");
             currentState = GameState.GAME_OVER;
-//        } else if (roundParticipants.size() == 1) {
-//            broadcastMessage("Winner is: " + roundParticipants.getFirst().getName());
-//            currentState = GameState.GAME_OVER; // todo this doesnt allow for single player ATM
+            platformToPattern(levelManager.getStartingLevel().getPattern());
+            teleportPlayersToPlatform(roundEliminations);
+        } else if (roundParticipants.size() == 1) {
+            broadcastTitle("Winner is: " + roundParticipants.getFirst().getName());
+            platformToPattern(levelManager.getStartingLevel().getPattern());
+            currentState = GameState.GAME_OVER;
         } else {
             speedLevel += 3;
             currentRound = new Round(levelManager.getRandomLevel(), roundParticipants);

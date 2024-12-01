@@ -7,6 +7,8 @@ import org.bukkit.entity.Player;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 public class PlayerManager {
 
     private static final World world = Bukkit.getWorld("world");
@@ -27,6 +29,17 @@ public class PlayerManager {
         }
 
         for (Player player : world.getPlayers()) {
+            player.teleport(platformLocation);
+        }
+    }
+
+    public static void teleportPlayersToPlatform(List<Player> players) {
+        if (world == null) {
+            logger.error("Couldn't teleport player, world is null");
+            return;
+        }
+
+        for (Player player : players) {
             player.teleport(platformLocation);
         }
     }
