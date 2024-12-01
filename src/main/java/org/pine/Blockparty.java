@@ -13,7 +13,7 @@ import org.pine.managers.LevelManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.pine.UiUtils.sendMessageToPlayerInChat;
+import static org.pine.managers.UiManager.sendMessageToPlayerInChat;
 
 public class Blockparty extends JavaPlugin {
 

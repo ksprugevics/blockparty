@@ -17,8 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.pine.UiUtils.broadcastMessage;
-import static org.pine.UiUtils.sendMessageToAllPlayersInChat;
+import static org.pine.managers.UiManager.*;
 import static org.pine.managers.PlatformManager.platformRemoveXBlock;
 import static org.pine.managers.PlatformManager.platformToPattern;
 import static org.pine.managers.PlayerManager.teleportAllPlayersToPlatform;
@@ -26,8 +25,10 @@ import static org.pine.managers.PlayerManager.teleportPlayerToLobby;
 
 public class GameManager {
 
-    private static final int SPEED_MULTIPLIER = 4;
+    private static final int SPEED_MULTIPLIER = 8;
     private static final long STARTING_TIMER_TICKS = Tick.tick().fromDuration(Duration.ofSeconds(10));
+    private static final long ROUND_TIME_TICK = Tick.tick().fromDuration(Duration.ofSeconds(10));
+    private static final long X_BLOCK_TIME_TICK = Tick.tick().fromDuration(Duration.ofSeconds(7));
     private static final long SECONDS_5_TICKS = Tick.tick().fromDuration(Duration.ofSeconds(5));
 
     private static final Logger logger = LoggerFactory.getLogger(GameManager.class);
@@ -83,18 +84,17 @@ public class GameManager {
         player.sendMessage("You lose!");
         teleportPlayerToLobby(player);
         logger.info("Player {} has been eliminated", player.getName());
-        sendMessageToAllPlayersInChat(player.getName() + "has been eliminated");
+        broadcastInChat(player.getName() + "has been eliminated");
         currentRound.getParticipants().remove(player);
         roundEliminations.add(player);
     }
 
     private void scheduleNextStateAfterDelay(long delayTicks) {
         currentGameTask = Bukkit.getScheduler().runTaskLater(blockparty, this::processGameLoop, delayTicks);
-
     }
 
     private void processGameLoop() {
-        sendMessageToAllPlayersInChat(currentState.name());
+        broadcastInChat(currentState.name());
         switch (currentState) {
             case STARTING_FIRST_ROUND -> processGameStateStartingFirstRound();
             case STARTING -> processGameStateStarting();
@@ -121,17 +121,17 @@ public class GameManager {
         platformToPattern(currentRound.getLevel().getPattern());
         currentState = GameState.ROUND_PREPARATION;
 
-        scheduleNextStateAfterDelay(20);
+        scheduleNextStateAfterDelay(calculateXBlockTime());
     }
 
     private void processGameStateRoundPreparation() {
-        broadcastMessage("The block is: " + currentRound.getxBlock().toString());
+        broadcastActionBar(currentRound.getxBlock().getDisplayText());
         currentState = GameState.BLOCK_REMOVAL;
-        scheduleNextStateAfterDelay(calculateTimer());
+        scheduleNextStateAfterDelay(calculateRoundTime());
     }
 
     private void processGameStateBlockRemoval() {
-        platformRemoveXBlock(currentRound.getxBlock());
+        platformRemoveXBlock(currentRound.getxBlock().getMaterial());
         currentState = GameState.ROUND_EVALUATION;
         scheduleNextStateAfterDelay(SECONDS_5_TICKS);
     }
@@ -140,23 +140,27 @@ public class GameManager {
         List<Player> roundParticipants = currentRound.getParticipants();
         roundParticipants.removeAll(roundEliminations);
         if (roundParticipants.isEmpty()) {
-            broadcastMessage("Game over - tie");
+            broadcastTitle("Game over - tie");
             currentState = GameState.GAME_OVER;
 //        } else if (roundParticipants.size() == 1) {
 //            broadcastMessage("Winner is: " + roundParticipants.getFirst().getName());
 //            currentState = GameState.GAME_OVER; // todo this doesnt allow for single player ATM
         } else {
-            speedLevel += 1;
+            speedLevel += 3;
             currentRound = new Round(levelManager.getRandomLevel(), roundParticipants);
-            sendMessageToAllPlayersInChat("next level, new speed level: " + speedLevel);
-            sendMessageToAllPlayersInChat("participants left: " + currentRound.getParticipants().stream().map(Player::getName).collect(Collectors.joining(", ")));
+            broadcastInChat("next level, new speed level: " + speedLevel);
+            broadcastInChat("participants left: " + currentRound.getParticipants().stream().map(Player::getName).collect(Collectors.joining(", ")));
             currentState = GameState.STARTING;
         }
 
         scheduleNextStateAfterDelay(0);
     }
 
-    private long calculateTimer() {
-        return STARTING_TIMER_TICKS - (long) speedLevel * SPEED_MULTIPLIER;
+    private long calculateRoundTime() {
+        return ROUND_TIME_TICK - (long) speedLevel * SPEED_MULTIPLIER;
+    }
+
+    private long calculateXBlockTime() {
+        return X_BLOCK_TIME_TICK - (long) speedLevel * SPEED_MULTIPLIER;
     }
 }

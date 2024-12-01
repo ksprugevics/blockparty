@@ -9,7 +9,7 @@ import java.util.Random;
 public class Round {
 
     private Level level;
-    private Material xBlock;
+    private XBlock xBlock;
     private List<Player> participants;
 
     public Round(Level level, List<Player> participants) {
@@ -22,7 +22,7 @@ public class Round {
         return level;
     }
 
-    public Material getxBlock() {
+    public XBlock getxBlock() {
         return xBlock;
     }
 
@@ -30,9 +30,9 @@ public class Round {
         return participants;
     }
 
-    private Material selectXBlock() {
+    private XBlock selectXBlock() {
         final Random random = new Random();
         final List<Material> levelBlocks = level.getBlocks();
-        return levelBlocks.get(random.nextInt(levelBlocks.size()));
+        return XBlock.fromMaterial(levelBlocks.get(random.nextInt(levelBlocks.size())));
     }
 }
