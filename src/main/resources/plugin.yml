@@ -6,12 +6,9 @@ author: PaperMC
 website: https://papermc.io
 api-version: '1.21.3'
 commands:
-  bpr:
-    description: Change the platform to the default pattern
-    usage: /bpr
-  bpf:
-    description: Fill the platform with the given block
-    usage: /bpf [block]
-  bpx:
-    description: Remove all the blocks except for the xBlock
-    usage: /bpx [xBlock]
+  bpstart:
+    description: Start the game
+    usage: /bpstart
+  bplvlinfo:
+    description: Gives information about the enabled levels
+    usage: /bplvlinfo
