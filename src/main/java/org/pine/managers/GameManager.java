@@ -17,14 +17,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.pine.managers.PlayerManager.*;
-import static org.pine.managers.UiManager.*;
 import static org.pine.managers.PlatformManager.platformRemoveXBlock;
 import static org.pine.managers.PlatformManager.platformToPattern;
+import static org.pine.managers.PlayerManager.*;
+import static org.pine.managers.UiManager.*;
 
 public class GameManager {
 
-    private static final int SPEED_MULTIPLIER = 8;
+    private static final int SPEED_LEVEL_MULTIPLIER = 8;
+    private static final int SPEED_INCREASE = 3;
     private static final long STARTING_TIMER_TICKS = Tick.tick().fromDuration(Duration.ofSeconds(10));
     private static final long ROUND_TIME_TICK = Tick.tick().fromDuration(Duration.ofSeconds(10));
     private static final long X_BLOCK_TIME_TICK = Tick.tick().fromDuration(Duration.ofSeconds(7));
@@ -38,13 +39,15 @@ public class GameManager {
 
     private int speedLevel = 1;
     private Round currentRound;
-    private List<Player> roundEliminations = new ArrayList<>();
+    private List<Player> roundEliminations;
+
     private GameState currentState = GameState.IDLE;
     private BukkitTask currentGameTask;
 
     public GameManager(Blockparty blockparty, LevelManager levelManager) {
         this.blockparty = blockparty;
         this.levelManager = levelManager;
+        this.roundEliminations = new ArrayList<>();
         world = Bukkit.getWorld("world");
 
         if (world == null) {
@@ -62,6 +65,7 @@ public class GameManager {
         speedLevel = 1;
         roundEliminations.clear();
         currentRound = null;
+
         currentState = GameState.STARTING_FIRST_ROUND;
         processGameLoop();
     }
@@ -72,6 +76,7 @@ public class GameManager {
         }
 
         teleportAllPlayersToLobby();
+        platformToPattern(levelManager.getStartingLevel().getPattern());
 
         if (currentGameTask != null) {
             currentGameTask.cancel();
@@ -81,26 +86,37 @@ public class GameManager {
     }
 
     public void playerEliminated(Player player) {
-        player.sendMessage("You lose!");
         teleportPlayerToLobby(player);
-        logger.info("Player {} has been eliminated", player.getName());
-        broadcastInChat(player.getName() + "has been eliminated");
         currentRound.getParticipants().remove(player);
         roundEliminations.add(player);
+
+        player.sendMessage("You lose!");
+        logger.info("Player {} has been eliminated", player.getName());
+        broadcastInChat(player.getName() + " has been eliminated");
+
+        // todo check if 1 or less player left
     }
 
     private void scheduleNextStateAfterDelay(long delayTicks) {
+        logger.info("Running delay for {} ticks, {} seconds", delayTicks, delayTicks / 20);
+        broadcastInChat("Running delay for " + delayTicks + " ticks, " + delayTicks / 20 + " seconds");
+
         currentGameTask = Bukkit.getScheduler().runTaskLater(blockparty, this::processGameLoop, delayTicks);
     }
 
     private void processGameLoop() {
+        logger.info("Processing game state: {}", currentState);
         broadcastInChat(currentState.name());
+
         switch (currentState) {
             case STARTING_FIRST_ROUND -> processGameStateStartingFirstRound();
-            case STARTING -> processGameStateStarting();
-            case ROUND_PREPARATION -> processGameStateRoundPreparation();
-            case BLOCK_REMOVAL -> processGameStateBlockRemoval();
+            case CHANGE_PLATFORM -> processGameStateChangePlatform();
+            case SHOW_XBLOCK -> processGameStateShowXBlock();
+            case XBLOCK_REMOVAL -> processGameStateXBlockRemoval();
             case ROUND_EVALUATION -> processGameStateRoundEvaluation();
+            case UPDATE_DIFFICULTY -> processGameStateUpdateDifficulty();
+            case WIN_CONDITION_TIE -> processGameStateWinConditionTie();
+            case WIN_CONDITION_WINNER -> processGameStateWinConditionWinner();
             case GAME_OVER -> stopGame();
             default -> throw new BlockpartyException("Unsupported game state: " + currentState);
         }
@@ -111,60 +127,84 @@ public class GameManager {
         teleportAllPlayersToPlatform();
 
         currentRound = new Round(levelManager.getStartingLevel(), world.getPlayers());
-        currentState = GameState.ROUND_PREPARATION;
+        broadcastInChat("Starting game with players: " + currentRound.getParticipants().stream().map(Player::getName).collect(Collectors.joining(", ")));
+        logger.info("Starting game with players: {}", currentRound.getParticipants().stream().map(Player::getName).collect(Collectors.joining(", ")));
 
-        logger.info("Starting initial startup timer for {} seconds", STARTING_TIMER_TICKS / 20);
+        currentState = GameState.SHOW_XBLOCK;
         scheduleNextStateAfterDelay(STARTING_TIMER_TICKS);
     }
 
-    private void processGameStateStarting() {
+    private void processGameStateChangePlatform() {
         platformToPattern(currentRound.getLevel().getPattern());
-        currentState = GameState.ROUND_PREPARATION;
+        logger.info("Changing level to: {}", currentRound.getLevel().getName());
+        broadcastInChat("Changing level to: " + currentRound.getLevel().getName());
 
+        currentState = GameState.SHOW_XBLOCK;
         scheduleNextStateAfterDelay(calculateXBlockTime());
     }
 
-    private void processGameStateRoundPreparation() {
+    private void processGameStateShowXBlock() {
         broadcastActionBar(currentRound.getxBlock().getDisplayText());
-        currentState = GameState.BLOCK_REMOVAL;
+
+        currentState = GameState.XBLOCK_REMOVAL;
         scheduleNextStateAfterDelay(calculateRoundTime());
     }
 
-    private void processGameStateBlockRemoval() {
+    private void processGameStateXBlockRemoval() {
         platformRemoveXBlock(currentRound.getxBlock().getMaterial());
+
         currentState = GameState.ROUND_EVALUATION;
         scheduleNextStateAfterDelay(SECONDS_3_TICKS);
     }
 
-    // todo maybe split this into more game states or methods
     private void processGameStateRoundEvaluation() {
         List<Player> roundParticipants = currentRound.getParticipants();
         roundParticipants.removeAll(roundEliminations);
         if (roundParticipants.isEmpty()) {
-            broadcastTitle("Game over - tie");
-            currentState = GameState.GAME_OVER;
-            platformToPattern(levelManager.getStartingLevel().getPattern());
-            teleportPlayersToPlatform(roundEliminations);
-        } else if (roundParticipants.size() == 1) {
-            broadcastTitle("Winner is: " + roundParticipants.getFirst().getName());
-            platformToPattern(levelManager.getStartingLevel().getPattern());
-            currentState = GameState.GAME_OVER;
+            currentState = GameState.WIN_CONDITION_TIE;
+//        } else if (roundParticipants.size() == 1) {
+//            currentState = GameState.WIN_CONDITION_WINNER;
         } else {
-            speedLevel += 3;
-            currentRound = new Round(levelManager.getRandomLevel(), roundParticipants);
-            broadcastInChat("next level, new speed level: " + speedLevel);
-            broadcastInChat("participants left: " + currentRound.getParticipants().stream().map(Player::getName).collect(Collectors.joining(", ")));
-            currentState = GameState.STARTING;
+            currentState = GameState.UPDATE_DIFFICULTY;
         }
 
-        scheduleNextStateAfterDelay(0);
+        scheduleNextStateAfterDelay(0L);
+    }
+
+    private void processGameStateWinConditionTie() {
+        broadcastTitle("Game over - tie");
+        platformToPattern(levelManager.getStartingLevel().getPattern());
+        teleportPlayersToPlatform(roundEliminations);
+
+        currentState = GameState.GAME_OVER;
+        scheduleNextStateAfterDelay(0L);
+    }
+
+    private void processGameStateWinConditionWinner() {
+        broadcastTitle(currentRound.getParticipants().getFirst().getName() + " won!");
+        platformToPattern(levelManager.getStartingLevel().getPattern());
+
+        currentState = GameState.GAME_OVER;
+        scheduleNextStateAfterDelay(0L);
+    }
+
+    private void processGameStateUpdateDifficulty() {
+        List<Player> roundParticipants = currentRound.getParticipants();
+        speedLevel += SPEED_INCREASE;
+        currentRound = new Round(levelManager.getRandomLevel(), roundParticipants);
+
+        broadcastInChat("Increasing speed level to: " + speedLevel);
+        broadcastInChat("Participants left: " + roundParticipants.stream().map(Player::getName).collect(Collectors.joining(", ")));
+
+        currentState = GameState.CHANGE_PLATFORM;
+        scheduleNextStateAfterDelay(0L);
     }
 
     private long calculateRoundTime() {
-        return ROUND_TIME_TICK - (long) speedLevel * SPEED_MULTIPLIER;
+        return ROUND_TIME_TICK - (long) speedLevel * SPEED_LEVEL_MULTIPLIER;
     }
 
     private long calculateXBlockTime() {
-        return X_BLOCK_TIME_TICK - (long) speedLevel * SPEED_MULTIPLIER;
+        return X_BLOCK_TIME_TICK - (long) speedLevel * SPEED_LEVEL_MULTIPLIER;
     }
 }
