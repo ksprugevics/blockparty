@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Blockparty level editor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+        #grid-container-wrapper {
+            display: flex;
+        }
+        #grid-container {
+            display: grid;
+            grid-template-columns: repeat(32, 20px);
+            grid-gap: 1px;
+            background-color: #000;
+            border: 1px solid #000;
+        }
+        .grid-cell {
+            width: 20px;
+            height: 20px;
+            background-color: white;
+            cursor: pointer;
+        }
+        #color-palette {
+            display: flex;
+            margin-bottom: 10px;
+            gap: 5px;
+        }
+        .color-option {
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .color-option.left-selected {
+            border-color: #39FF14; /* Neon Green */
+        }
+        .color-option.right-selected {
+            border-color: #00FFFF; /* Neon Blue */
+        }
+        #output, #import-input {
+            width: 100%;
+            max-width: 640px;
+            height: 200px;
+            margin-top: 10px;
+        }
+        .button-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        #replace-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+<h1>Blockparty level editor</h1>
+
+<textarea id="import-input" placeholder="Paste your JSON grid here to import"></textarea>
+<div class="button-container">
+    <button id="import-btn">Import Grid</button>
+</div>
+
+<div id="replace-container">
+    <select id="replace-from-select"></select>
+    <select id="replace-to-select"></select>
+    <button id="replace-btn">Replace All</button>
+</div>
+
+<div id="color-palette"></div>
+
+<div id="grid-container-wrapper">
+    <div id="grid-container"></div>
+</div>
+
+<div class="button-container">
+    <button id="reset-btn">Reset Grid</button>
+    <button id="save-btn">Save Grid</button>
+</div>
+
+<textarea id="output" readonly placeholder="Export will appear here"></textarea>
+
+<script>
+    // Minecraft concrete colors
+    const concreteColors = [
+        'WHITE', 'LIGHT_GRAY', 'GRAY', 'BLACK',
+        'BROWN', 'RED', 'ORANGE', 'YELLOW',
+        'LIME', 'GREEN', 'CYAN', 'LIGHT_BLUE',
+        'BLUE', 'PURPLE', 'MAGENTA', 'PINK'
+    ];
+
+    const colorMap = {
+        'WHITE': '#FFFFFF',
+        'LIGHT_GRAY': '#A0A0A0',
+        'GRAY': '#696969',
+        'BLACK': '#1A1A1A',
+        'BROWN': '#794A33',
+        'RED': '#B02E26',
+        'ORANGE': '#F07613',
+        'YELLOW': '#FED83D',
+        'LIME': '#80C71F',
+        'GREEN': '#5E7C16',
+        'CYAN': '#169C9C',
+        'LIGHT_BLUE': '#3AB3DA',
+        'BLUE': '#3C44A9',
+        'PURPLE': '#8932B8',
+        'MAGENTA': '#C74EBD',
+        'PINK': '#F38BAA'
+    };
+
+    let leftSelectedColor = 'WHITE';
+    let rightSelectedColor = 'BLACK';
+    const gridCont = document.getElementById('grid-container');
+    const grid = [];
+
+    // Create color palette and dropdowns
+    function createColorPalette() {
+        const paletteCont = document.getElementById('color-palette');
+        const replaceFromSelect = document.getElementById('replace-from-select');
+        const replaceToSelect = document.getElementById('replace-to-select');
+
+        paletteCont.innerHTML = '';
+        replaceFromSelect.innerHTML = '';
+        replaceToSelect.innerHTML = '';
+
+        concreteColors.forEach(color => {
+            // Color Palette
+            const colorEl = document.createElement('div');
+            colorEl.className = 'color-option';
+            colorEl.style.backgroundColor = colorMap[color];
+            colorEl.dataset.color = color;
+
+            if (color === leftSelectedColor) {
+                colorEl.classList.add('left-selected');
+            }
+            if (color === rightSelectedColor) {
+                colorEl.classList.add('right-selected');
+            }
+
+            colorEl.addEventListener('click', (e) => {
+                if (e.button === 0 || e.type === 'click') {
+                    // Left click handler
+                    document.querySelectorAll('.color-option').forEach(el =>
+                        el.classList.remove('left-selected'));
+                    colorEl.classList.add('left-selected');
+                    leftSelectedColor = color;
+                }
+            });
+
+            colorEl.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                // Right click handler
+                document.querySelectorAll('.color-option').forEach(el =>
+                    el.classList.remove('right-selected'));
+                colorEl.classList.add('right-selected');
+                rightSelectedColor = color;
+            });
+
+            paletteCont.appendChild(colorEl);
+
+            // Replace From Dropdown
+            const fromOption = document.createElement('option');
+            fromOption.value = color;
+            fromOption.textContent = color;
+            replaceFromSelect.appendChild(fromOption);
+
+            // Replace To Dropdown
+            const toOption = document.createElement('option');
+            toOption.value = color;
+            toOption.textContent = color;
+            replaceToSelect.appendChild(toOption);
+        });
+    }
+
+    // Create grid
+    function createGrid() {
+        gridCont.innerHTML = '';
+        grid.length = 0;
+
+        for (let i = 0; i < 32; i++) {
+            const row = [];
+            for (let j = 0; j < 32; j++) {
+                const cell = document.createElement('div');
+                cell.className = 'grid-cell';
+                cell.dataset.x = j;
+                cell.dataset.y = i;
+                cell.style.backgroundColor = 'white';
+                cell.dataset.color = `WHITE_CONCRETE`;
+
+                cell.addEventListener('mousedown', (e) => {
+                    let colorToUse, colorName;
+                    if (e.button === 0) {
+                        // Left click
+                        colorToUse = colorMap[leftSelectedColor];
+                        colorName = leftSelectedColor;
+                    } else if (e.button === 2) {
+                        // Right click
+                        colorToUse = colorMap[rightSelectedColor];
+                        colorName = rightSelectedColor;
+                    }
+
+                    cell.style.backgroundColor = colorToUse;
+                    cell.dataset.color = `${colorName}_CONCRETE`;
+                });
+
+                cell.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    const colorToUse = colorMap[rightSelectedColor];
+                    cell.style.backgroundColor = colorToUse;
+                    cell.dataset.color = `${rightSelectedColor}_CONCRETE`;
+                });
+
+                cell.addEventListener('mousemove', (e) => {
+                    if (e.buttons === 1) {
+                        // Left mouse button
+                        cell.style.backgroundColor = colorMap[leftSelectedColor];
+                        cell.dataset.color = `${leftSelectedColor}_CONCRETE`;
+                    } else if (e.buttons === 2) {
+                        // Right mouse button
+                        cell.style.backgroundColor = colorMap[rightSelectedColor];
+                        cell.dataset.color = `${rightSelectedColor}_CONCRETE`;
+                    }
+                });
+
+                // Prevent context menu on right-click
+                cell.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                });
+
+                gridCont.appendChild(cell);
+                row.push(cell);
+            }
+            grid.push(row);
+        }
+    }
+
+    // Initialize replace button
+    function setupReplaceButton() {
+        const replaceBtn = document.getElementById('replace-btn');
+        const replaceFromSelect = document.getElementById('replace-from-select');
+        const replaceToSelect = document.getElementById('replace-to-select');
+
+        replaceBtn.addEventListener('click', () => {
+            const fromColor = replaceFromSelect.value;
+            const toColor = replaceToSelect.value;
+            const fromColorConcrete = `${fromColor}_CONCRETE`;
+            const toColorConcrete = `${toColor}_CONCRETE`;
+
+            grid.forEach(row => {
+                row.forEach(cell => {
+                    if (cell.dataset.color === fromColorConcrete) {
+                        cell.style.backgroundColor = colorMap[toColor];
+                        cell.dataset.color = toColorConcrete;
+                    }
+                });
+            });
+        });
+    }
+
+    // Modify the initial setup
+    function initializeEditor() {
+        createColorPalette();
+        createGrid();
+        setupReplaceButton();
+    }
+
+    // Reset button
+    document.getElementById('reset-btn').addEventListener('click', () => {
+        grid.forEach(row => {
+            row.forEach(cell => {
+                cell.style.backgroundColor = 'white';
+                cell.dataset.color = `WHITE_CONCRETE`;
+            });
+        });
+    });
+
+    // Import button
+    document.getElementById('import-btn').addEventListener('click', () => {
+        const importInput = document.getElementById('import-input');
+        try {
+            let importedData;
+
+            try {
+                const fullImport = JSON.parse(importInput.value);
+                importedData = fullImport.pattern;
+            } catch {
+                importedData = JSON.parse(importInput.value);
+            }
+
+            if (!Array.isArray(importedData) ||
+                importedData.length !== 32 ||
+                importedData.some(row => row.length !== 32)) {
+                throw new Error('Invalid grid size. Must be 32x32.');
+            }
+
+            createGrid();
+            importedData.forEach((row, y) => {
+                row.forEach((color, x) => {
+                    const cell = grid[y][x];
+                    const colorName = color.replace('_CONCRETE', '');
+                    cell.style.backgroundColor = colorMap[colorName] || 'white';
+                    cell.dataset.color = color;
+                });
+            });
+        } catch (error) {
+            alert(`Error importing grid: ${error.message}`);
+        }
+    });
+
+    // Save button
+    document.getElementById('save-btn').addEventListener('click', () => {
+        const blockGrid = grid.map(row =>
+            row.map(cell =>
+                cell.dataset.color || 'WHITE_CONCRETE'
+            )
+        );
+
+        const uniqueColors = [...new Set(
+            blockGrid.flat().filter(color => color !== 'WHITE_CONCRETE')
+        )];
+
+        const exportObj = {
+            name: "test1",
+            enable: true,
+            blocks: uniqueColors,
+            pattern: blockGrid
+        };
+
+        document.getElementById('output').value =
+            JSON.stringify(exportObj);
+    });
+
+    // Call initialization on page load
+    initializeEditor();
+</script>
+</body>
+</html>
