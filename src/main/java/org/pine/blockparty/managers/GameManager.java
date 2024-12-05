@@ -35,6 +35,7 @@ public class GameManager {
     private GameState currentState = GameState.IDLE;
     private BukkitTask currentGameTask;
     private Round currentRound;
+    private boolean singlePlayerMode = false;
 
     public GameManager(Blockparty blockparty, LevelManager levelManager) {
         this.blockparty = blockparty;
@@ -54,6 +55,7 @@ public class GameManager {
         }
 
         currentRound = null;
+        singlePlayerMode = world.getPlayers().size() == 1;
 
         currentState = GameState.STARTING_FIRST_ROUND;
         processGameLoop();
@@ -155,8 +157,8 @@ public class GameManager {
             currentState = GameState.WIN_CONDITION_TIE;
         } else if (Difficulty.getNextDifficulty(currentRound.getDifficulty()) == Difficulty.BLANK) {
             currentState = GameState.WIN_CONDITION_ROUND_END;
-//        } else if (roundParticipants.size() == 1) {
-//            currentState = GameState.WIN_CONDITION_WINNER;
+        } else if (!singlePlayerMode && roundParticipants.size() == 1) {
+            currentState = GameState.WIN_CONDITION_WINNER;
         } else {
             currentState = GameState.UPDATE_DIFFICULTY;
         }
@@ -182,7 +184,11 @@ public class GameManager {
     }
 
     private void processGameStateWinConditionRoundEnd() {
-        broadcastTitle("Tie: " + currentRound.getParticipants().stream().map(Player::getName).collect(Collectors.joining(", ")) + " won!");
+        if (singlePlayerMode) {
+            broadcastTitle("You won!");
+        } else {
+            broadcastTitle("Tie: " + currentRound.getParticipants().stream().map(Player::getName).collect(Collectors.joining(", ")) + " won!");
+        }
         platformToPattern(levelManager.getStartingLevel().getPattern());
 
         currentState = GameState.GAME_OVER;
