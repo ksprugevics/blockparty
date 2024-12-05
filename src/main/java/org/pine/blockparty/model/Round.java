@@ -1,4 +1,4 @@
-package org.pine.model;
+package org.pine.blockparty.model;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -12,10 +12,12 @@ public class Round {
     private final Level level;
     private final XBlock xBlock;
     private final List<Player> participants;
+    private Difficulty difficulty;
     private List<Player> eliminations;
 
-    public Round(Level level, List<Player> participants) {
+    public Round(Level level, Difficulty difficulty, List<Player> participants) {
         this.level = level;
+        this.difficulty = difficulty;
         this.participants = participants;
         this.xBlock = selectXBlock();
         this.eliminations = new ArrayList<>();
@@ -35,6 +37,10 @@ public class Round {
 
     public List<Player> getEliminations() {
         return eliminations;
+    }
+
+    public Difficulty getDifficulty() {
+        return difficulty;
     }
 
     private XBlock selectXBlock() {

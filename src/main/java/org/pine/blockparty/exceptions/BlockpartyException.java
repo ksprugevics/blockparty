@@ -1,4 +1,4 @@
-package org.pine.exceptions;
+package org.pine.blockparty.exceptions;
 
 public class BlockpartyException  extends RuntimeException {
 

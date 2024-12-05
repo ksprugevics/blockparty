@@ -1,9 +1,9 @@
-package org.pine.managers;
+package org.pine.blockparty.managers;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
-import org.pine.exceptions.LevelLoadException;
-import org.pine.model.Level;
+import org.pine.blockparty.exceptions.LevelLoadException;
+import org.pine.blockparty.model.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,8 +56,8 @@ public class LevelManager {
         final Gson gson = new Gson();
 
         try (FileReader reader = new FileReader(LEVEL_FILE_PATH)) {
-            final Type type = new TypeToken<List<org.pine.model.Level>>() {}.getType();
-            final List<org.pine.model.Level> loadedData = gson.fromJson(reader, type);
+            final Type type = new TypeToken<List<Level>>() {}.getType();
+            final List<Level> loadedData = gson.fromJson(reader, type);
 
             if (loadedData == null || loadedData.isEmpty()) {
                 throw new LevelLoadException("No levels found. File is empty?");

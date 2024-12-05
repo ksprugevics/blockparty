@@ -1,4 +1,4 @@
-package org.pine.managers;
+package org.pine.blockparty.managers;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;

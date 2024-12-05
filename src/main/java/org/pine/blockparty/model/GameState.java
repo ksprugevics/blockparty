@@ -1,4 +1,4 @@
-package org.pine.model;
+package org.pine.blockparty.model;
 
 public enum GameState {
 

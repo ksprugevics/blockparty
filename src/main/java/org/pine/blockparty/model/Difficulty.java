@@ -1,6 +1,4 @@
-package org.pine.model;
-
-import org.pine.exceptions.BlockpartyException;
+package org.pine.blockparty.model;
 
 import java.util.Arrays;
 

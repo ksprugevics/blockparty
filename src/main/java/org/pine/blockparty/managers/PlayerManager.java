@@ -1,4 +1,4 @@
-package org.pine.managers;
+package org.pine.blockparty.managers;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

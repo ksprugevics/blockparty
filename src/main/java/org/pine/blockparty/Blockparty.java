@@ -1,22 +1,21 @@
-package org.pine;
+package org.pine.blockparty;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.pine.event.PlayerEvent;
-import org.pine.exceptions.LevelLoadException;
-import org.pine.managers.GameManager;
-import org.pine.managers.LevelManager;
-import org.pine.model.Level;
+import org.pine.blockparty.event.PlayerEvent;
+import org.pine.blockparty.exceptions.LevelLoadException;
+import org.pine.blockparty.managers.GameManager;
+import org.pine.blockparty.managers.LevelManager;
+import org.pine.blockparty.model.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.pine.managers.PlatformManager.platformToPattern;
-import static org.pine.managers.UiManager.sendMessageToPlayerInChat;
+import static org.pine.blockparty.managers.PlatformManager.platformToPattern;
+import static org.pine.blockparty.managers.UiManager.sendMessageToPlayerInChat;
 
 public class Blockparty extends JavaPlugin {
 

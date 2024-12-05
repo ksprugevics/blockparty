@@ -1,9 +1,9 @@
-package org.pine.model;
+package org.pine.blockparty.model;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Material;
-import org.pine.exceptions.BlockpartyException;
+import org.pine.blockparty.exceptions.BlockpartyException;
 
 import java.util.Arrays;
 

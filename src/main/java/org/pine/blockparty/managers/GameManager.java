@@ -1,24 +1,24 @@
-package org.pine.managers;
+package org.pine.blockparty.managers;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
-import org.pine.Blockparty;
-import org.pine.exceptions.BlockpartyException;
-import org.pine.model.Difficulty;
-import org.pine.model.GameState;
-import org.pine.model.Round;
+import org.pine.blockparty.Blockparty;
+import org.pine.blockparty.exceptions.BlockpartyException;
+import org.pine.blockparty.model.Difficulty;
+import org.pine.blockparty.model.GameState;
+import org.pine.blockparty.model.Round;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.pine.managers.PlatformManager.platformRemoveXBlock;
-import static org.pine.managers.PlatformManager.platformToPattern;
-import static org.pine.managers.PlayerManager.*;
-import static org.pine.managers.UiManager.*;
+import static org.pine.blockparty.managers.PlatformManager.platformRemoveXBlock;
+import static org.pine.blockparty.managers.PlatformManager.platformToPattern;
+import static org.pine.blockparty.managers.PlayerManager.*;
+import static org.pine.blockparty.managers.UiManager.*;
 
 public class GameManager {
 
@@ -32,11 +32,9 @@ public class GameManager {
     private final Blockparty blockparty;
     private final LevelManager levelManager;
 
-    private Round currentRound;
-    private Difficulty currentDifficulty;
-
     private GameState currentState = GameState.IDLE;
     private BukkitTask currentGameTask;
+    private Round currentRound;
 
     public GameManager(Blockparty blockparty, LevelManager levelManager) {
         this.blockparty = blockparty;
@@ -55,7 +53,6 @@ public class GameManager {
             return;
         }
 
-        currentDifficulty = Difficulty.LVL_1;
         currentRound = null;
 
         currentState = GameState.STARTING_FIRST_ROUND;
@@ -89,7 +86,7 @@ public class GameManager {
 
         player.sendMessage("You lose!");
         logger.info("Player {} has been eliminated", player.getName());
-        broadcastInChat(player.getName() + " has been eliminated");
+        broadcastInChat(player.getName() + " have been eliminated");
     }
 
     private void scheduleNextStateAfterDelay(long delayTicks) {
@@ -100,7 +97,6 @@ public class GameManager {
 
     private void processGameLoop() {
         logger.info("Processing game state: {}", currentState);
-        broadcastInChat(currentState.name());
 
         switch (currentState) {
             case STARTING_FIRST_ROUND -> processGameStateStartingFirstRound();
@@ -121,8 +117,7 @@ public class GameManager {
         platformToPattern(levelManager.getStartingLevel().getPattern());
         teleportAllPlayersToPlatform();
 
-        currentRound = new Round(levelManager.getStartingLevel(), world.getPlayers());
-        broadcastInChat("Starting game with players: " + currentRound.getParticipants().stream().map(Player::getName).collect(Collectors.joining(", ")));
+        currentRound = new Round(levelManager.getStartingLevel(), Difficulty.LVL_1, world.getPlayers());
         logger.info("Starting game with players: {}", currentRound.getParticipants().stream().map(Player::getName).collect(Collectors.joining(", ")));
 
         currentState = GameState.SHOW_XBLOCK;
@@ -132,7 +127,6 @@ public class GameManager {
     private void processGameStateChangePlatform() {
         platformToPattern(currentRound.getLevel().getPattern());
         logger.info("Changing level to: {}", currentRound.getLevel().getName());
-        broadcastInChat("Changing level to: " + currentRound.getLevel().getName());
 
         currentState = GameState.SHOW_XBLOCK;
         scheduleNextStateAfterDelay(SHOW_XBLOCK_AFTER_TICKS);
@@ -142,7 +136,7 @@ public class GameManager {
         broadcastActionBar(currentRound.getxBlock().getDisplayText());
 
         currentState = GameState.XBLOCK_REMOVAL;
-        scheduleNextStateAfterDelay(currentDifficulty.getTimeInTicks());
+        scheduleNextStateAfterDelay(currentRound.getDifficulty().getTimeInTicks());
     }
 
     private void processGameStateXBlockRemoval() {
@@ -159,7 +153,7 @@ public class GameManager {
         roundParticipants.removeAll(roundEliminations);
         if (roundParticipants.isEmpty()) {
             currentState = GameState.WIN_CONDITION_TIE;
-        } else if (Difficulty.getNextDifficulty(currentDifficulty) == Difficulty.BLANK) {
+        } else if (Difficulty.getNextDifficulty(currentRound.getDifficulty()) == Difficulty.BLANK) {
             currentState = GameState.WIN_CONDITION_ROUND_END;
 //        } else if (roundParticipants.size() == 1) {
 //            currentState = GameState.WIN_CONDITION_WINNER;
@@ -197,11 +191,11 @@ public class GameManager {
 
     private void processGameStateUpdateDifficulty() {
         final List<Player> roundParticipants = currentRound.getParticipants();
-        currentDifficulty = Difficulty.getNextDifficulty(currentDifficulty);
-        currentRound = new Round(levelManager.getRandomLevel(), roundParticipants);
+        Difficulty nextDifficulty = Difficulty.getNextDifficulty(currentRound.getDifficulty());
+        currentRound = new Round(levelManager.getRandomLevel(), nextDifficulty, roundParticipants);
 
-        broadcastInChat("Increasing speed level to: " + currentDifficulty.getTimeInSeconds());
-        broadcastInChat("Participants left: " + roundParticipants.stream().map(Player::getName).collect(Collectors.joining(", ")));
+        logger.info("Increasing speed level to: {}", nextDifficulty.getTimeInSeconds());
+        logger.info("Participants left: {}", roundParticipants.stream().map(Player::getName).collect(Collectors.joining(", ")));
 
         currentState = GameState.CHANGE_PLATFORM;
         scheduleNextStateAfterDelay(0L);

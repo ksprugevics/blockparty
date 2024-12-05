@@ -1,6 +1,6 @@
 name: Blockparty
 version: 1.0.0
-main: org.pine.Blockparty
+main: org.pine.blockparty.Blockparty
 description: Blockparty minigame
 author: PaperMC
 website: https://papermc.io
