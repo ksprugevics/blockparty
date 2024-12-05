@@ -5,6 +5,7 @@ description: Blockparty minigame
 author: PaperMC
 website: https://papermc.io
 api-version: '1.21.3'
+
 commands:
   bpstart:
     description: Start the game
@@ -13,8 +14,13 @@ commands:
       description: Stop the game
       usage: /bpstop
   bplvlinfo:
-    description: Gives information about the enabled levels
+    description: Show level information
     usage: /bplvlinfo
   bplvl:
     description: Changes the map to the specified level
-    usage: /bplvl
+    usage: /bplvl <levelName>
+
+permissions:
+  blockparty.admin:
+    description: Allows admin control of the game
+    default: op

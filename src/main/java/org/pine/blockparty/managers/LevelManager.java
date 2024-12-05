@@ -28,6 +28,10 @@ public class LevelManager {
         loadLevels();
     }
 
+    public List<Level> getLevelList() {
+        return levelList;
+    }
+
     public Level getLevelByName(String name) {
         return levelList.stream().filter(lvl -> Objects.equals(lvl.getName(), name)).findFirst().orElse(null);
     }
