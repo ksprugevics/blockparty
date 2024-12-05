@@ -56,7 +56,7 @@ public class Blockparty extends JavaPlugin {
     }
 
     private void registerCommands() {
-        this.commandManager = new CommandManager(this, gameManager, levelManager);
+        this.commandManager = new CommandManager(gameManager, levelManager);
 
         getCommand("bpstart").setExecutor(commandManager);
         getCommand("bpstop").setExecutor(commandManager);

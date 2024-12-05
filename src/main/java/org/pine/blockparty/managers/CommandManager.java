@@ -16,12 +16,10 @@ import static org.pine.blockparty.managers.UiManager.sendMessageToPlayerInChat;
 
 public class CommandManager implements CommandExecutor, TabCompleter {
 
-    private final Plugin plugin;
     private final GameManager gameManager;
     private final LevelManager levelManager;
 
-    public CommandManager(Plugin plugin, GameManager gameManager, LevelManager levelManager) {
-        this.plugin = plugin;
+    public CommandManager(GameManager gameManager, LevelManager levelManager) {
         this.gameManager = gameManager;
         this.levelManager = levelManager;
     }
