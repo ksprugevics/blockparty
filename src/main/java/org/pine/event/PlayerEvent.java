@@ -7,9 +7,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.pine.managers.GameManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.pine.managers.PlayerManager.teleportPlayerToLobby;
 
@@ -30,9 +29,15 @@ public class PlayerEvent implements Listener {
     }
 
     @EventHandler
+    public void onPlayerLeave(PlayerQuitEvent event) {
+        final Player player = event.getPlayer();
+        gameManager.playerLeft(player);
+    }
+
+    @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
-        Player player = event.getPlayer();
-        Location loc = player.getLocation();
+        final Player player = event.getPlayer();
+        final Location loc = player.getLocation();
         if (loc.getY() < FALL_THRESHOLD_Y) {
             gameManager.playerEliminated(player);
         }

@@ -12,7 +12,6 @@ import org.pine.model.Round;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,7 +33,6 @@ public class GameManager {
     private final LevelManager levelManager;
 
     private Round currentRound;
-    private List<Player> roundEliminations; // todo move to Round?
     private Difficulty currentDifficulty;
 
     private GameState currentState = GameState.IDLE;
@@ -43,7 +41,6 @@ public class GameManager {
     public GameManager(Blockparty blockparty, LevelManager levelManager) {
         this.blockparty = blockparty;
         this.levelManager = levelManager;
-        this.roundEliminations = new ArrayList<>();
         world = Bukkit.getWorld("world");
 
         if (world == null) {
@@ -59,7 +56,6 @@ public class GameManager {
         }
 
         currentDifficulty = Difficulty.LVL_1;
-        roundEliminations.clear();
         currentRound = null;
 
         currentState = GameState.STARTING_FIRST_ROUND;
@@ -81,16 +77,19 @@ public class GameManager {
         currentState = GameState.IDLE;
     }
 
+    public void playerLeft(Player player) {
+        if (currentRound.getParticipants().contains(player)) {
+            playerEliminated(player);
+        }
+    }
+
     public void playerEliminated(Player player) {
         teleportPlayerToLobby(player);
-        currentRound.getParticipants().remove(player);
-        roundEliminations.add(player);
+        currentRound.getEliminations().add(player);
 
         player.sendMessage("You lose!");
         logger.info("Player {} has been eliminated", player.getName());
         broadcastInChat(player.getName() + " has been eliminated");
-
-        // todo check if 1 or less player left
     }
 
     private void scheduleNextStateAfterDelay(long delayTicks) {
@@ -154,7 +153,9 @@ public class GameManager {
     }
 
     private void processGameStateRoundEvaluation() {
+        final List<Player> roundEliminations = currentRound.getEliminations();
         List<Player> roundParticipants = currentRound.getParticipants();
+
         roundParticipants.removeAll(roundEliminations);
         if (roundParticipants.isEmpty()) {
             currentState = GameState.WIN_CONDITION_TIE;
@@ -172,7 +173,7 @@ public class GameManager {
     private void processGameStateWinConditionTie() {
         broadcastTitle("Game over - tie");
         platformToPattern(levelManager.getStartingLevel().getPattern());
-        teleportPlayersToPlatform(roundEliminations);
+        teleportPlayersToPlatform(currentRound.getEliminations());
 
         currentState = GameState.GAME_OVER;
         scheduleNextStateAfterDelay(0L);
@@ -195,7 +196,7 @@ public class GameManager {
     }
 
     private void processGameStateUpdateDifficulty() {
-        List<Player> roundParticipants = currentRound.getParticipants();
+        final List<Player> roundParticipants = currentRound.getParticipants();
         currentDifficulty = Difficulty.getNextDifficulty(currentDifficulty);
         currentRound = new Round(levelManager.getRandomLevel(), roundParticipants);
 
