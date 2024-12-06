@@ -1,5 +1,6 @@
 package org.pine.blockparty.managers;
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -31,15 +32,17 @@ public class GameManager {
 
     private final Blockparty blockparty;
     private final LevelManager levelManager;
+    private final UiManager uiManager;
 
     private GameState currentState = GameState.IDLE;
     private BukkitTask currentGameTask;
     private Round currentRound;
     private boolean singlePlayerMode = false;
 
-    public GameManager(Blockparty blockparty, LevelManager levelManager) {
+    public GameManager(Blockparty blockparty, LevelManager levelManager, UiManager uiManager) {
         this.blockparty = blockparty;
         this.levelManager = levelManager;
+        this.uiManager = uiManager;
         world = Bukkit.getWorld("world");
 
         if (world == null) {
@@ -47,6 +50,10 @@ public class GameManager {
         }
 
         platformToPattern(levelManager.getStartingLevel().getPattern());
+    }
+
+    public Round getCurrentRound() {
+        return currentRound;
     }
 
     public void startGame() {
@@ -89,6 +96,7 @@ public class GameManager {
         player.sendMessage("You lose!");
         logger.info("Player {} has been eliminated", player.getName());
         broadcastInChat(player.getName() + " have been eliminated");
+        uiManager.updateScoreboardRoundParticipants(currentRound.getParticipants().size() - currentRound.getEliminations().size());
     }
 
     private void scheduleNextStateAfterDelay(long delayTicks) {
@@ -121,6 +129,8 @@ public class GameManager {
 
         currentRound = new Round(levelManager.getStartingLevel(), Difficulty.LVL_1, world.getPlayers());
         logger.info("Starting game with players: {}", currentRound.getParticipants().stream().map(Player::getName).collect(Collectors.joining(", ")));
+        uiManager.updateScoreboard(world.getPlayers().size(), currentRound.getDifficulty().getLevel(), currentRound.getDifficulty().getTimeInSeconds(), 1, 1);
+        startSplash();
 
         currentState = GameState.SHOW_XBLOCK;
         scheduleNextStateAfterDelay(STARTING_TIMER_TICKS);
@@ -135,13 +145,13 @@ public class GameManager {
     }
 
     private void processGameStateShowXBlock() {
-        broadcastActionBar(currentRound.getxBlock().getDisplayText());
-
+        colorCountdown(blockparty, currentRound.getxBlock().getDisplayText(), (int) currentRound.getDifficulty().getTimeInTicks() / 10 - 1);
         currentState = GameState.XBLOCK_REMOVAL;
         scheduleNextStateAfterDelay(currentRound.getDifficulty().getTimeInTicks());
     }
 
     private void processGameStateXBlockRemoval() {
+        broadcastActionBar(Component.text("X Stop X"));
         platformRemoveXBlock(currentRound.getxBlock().getMaterial());
 
         currentState = GameState.ROUND_EVALUATION;
@@ -167,7 +177,11 @@ public class GameManager {
     }
 
     private void processGameStateWinConditionTie() {
-        broadcastTitle("Game over - tie");
+        if (singlePlayerMode) {
+            broadcastTitle(Component.text("§d§lYou lose!"), Component.empty());
+        } else {
+            broadcastTitle(Component.text("§d§lTie - you all lost!"), Component.empty());
+        }
         platformToPattern(levelManager.getStartingLevel().getPattern());
         teleportPlayersToPlatform(currentRound.getEliminations());
 
@@ -176,7 +190,7 @@ public class GameManager {
     }
 
     private void processGameStateWinConditionWinner() {
-        broadcastTitle(currentRound.getParticipants().getFirst().getName() + " won!");
+        broadcastTitle(Component.text("§a§l" + currentRound.getParticipants().getFirst().getName() + " won!"), Component.empty());
         platformToPattern(levelManager.getStartingLevel().getPattern());
 
         currentState = GameState.GAME_OVER;
@@ -185,9 +199,11 @@ public class GameManager {
 
     private void processGameStateWinConditionRoundEnd() {
         if (singlePlayerMode) {
-            broadcastTitle("You won!");
+            broadcastTitle(Component.text("§a§lYou won!"), Component.empty());
         } else {
-            broadcastTitle("Tie: " + currentRound.getParticipants().stream().map(Player::getName).collect(Collectors.joining(", ")) + " won!");
+            broadcastTitle(Component.text("§b§l" +
+                    currentRound.getParticipants().stream().map(Player::getName).collect(Collectors.joining(", "))),
+                    Component.text("§e§lare the winners!"));
         }
         platformToPattern(levelManager.getStartingLevel().getPattern());
 
@@ -202,6 +218,8 @@ public class GameManager {
 
         logger.info("Increasing speed level to: {}", nextDifficulty.getTimeInSeconds());
         logger.info("Participants left: {}", roundParticipants.stream().map(Player::getName).collect(Collectors.joining(", ")));
+
+        uiManager.updateScoreboardRoundInfo(roundParticipants.size(), nextDifficulty.getLevel(), nextDifficulty.getTimeInSeconds());
 
         currentState = GameState.CHANGE_PLATFORM;
         scheduleNextStateAfterDelay(0L);

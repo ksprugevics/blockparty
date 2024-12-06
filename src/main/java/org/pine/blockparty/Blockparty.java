@@ -8,6 +8,7 @@ import org.pine.blockparty.exceptions.LevelLoadException;
 import org.pine.blockparty.managers.CommandManager;
 import org.pine.blockparty.managers.GameManager;
 import org.pine.blockparty.managers.LevelManager;
+import org.pine.blockparty.managers.UiManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +19,7 @@ public class Blockparty extends JavaPlugin {
     private GameManager gameManager;
     private LevelManager levelManager;
     private CommandManager commandManager;
+    private UiManager uiManager;
 
     @Override
     public void onEnable() {
@@ -25,6 +27,7 @@ public class Blockparty extends JavaPlugin {
 
         try {
             initializeLevelManager();
+            initializeUiManager();
             initializeGameManager();
             registerEvents(pluginManager);
             registerCommands();
@@ -48,11 +51,15 @@ public class Blockparty extends JavaPlugin {
     }
 
     private void initializeGameManager() {
-        this.gameManager = new GameManager(this, levelManager);
+        this.gameManager = new GameManager(this, levelManager, uiManager);
+    }
+
+    private void initializeUiManager() {
+        this.uiManager = new UiManager();
     }
 
     private void registerEvents(PluginManager pluginManager) {
-        pluginManager.registerEvents(new PlayerEvent(gameManager), this);
+        pluginManager.registerEvents(new PlayerEvent(gameManager, uiManager), this);
     }
 
     private void registerCommands() {
