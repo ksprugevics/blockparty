@@ -79,6 +79,7 @@ public class GameManager {
         platformToPattern(levelManager.getStartingLevel().getPattern());
         removeAllItems();
         uiManager.updateBossBar(Component.text("§5§lBlockparty"));
+        SoundManager.stopMusic();
 
         if (currentGameTask != null) {
             currentGameTask.cancel();
@@ -137,6 +138,8 @@ public class GameManager {
         uiManager.updateScoreboard(world.getPlayers().size(), currentRound.getDifficulty().getLevel(), currentRound.getDifficulty().getTimeInSeconds(), 1, 1);
         uiManager.updateBossBar(Component.text("Preparing").color(XBlock.WHITE.getDisplayText().color()));
         startSplash();
+        SoundManager.playMusic();
+
 
         currentState = GameState.SHOW_XBLOCK;
         scheduleNextStateAfterDelay(STARTING_TIMER_TICKS);
