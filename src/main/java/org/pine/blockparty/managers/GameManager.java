@@ -95,6 +95,8 @@ public class GameManager {
     }
 
     public void playerEliminated(Player player) {
+        world.strikeLightningEffect(player.getLocation());
+
         teleportPlayerToLobby(player);
         currentRound.getEliminations().add(player);
 
