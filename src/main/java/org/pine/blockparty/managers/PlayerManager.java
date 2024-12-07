@@ -2,8 +2,10 @@ package org.pine.blockparty.managers;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,6 +54,28 @@ public class PlayerManager {
 
         for (Player player : world.getPlayers()) {
             player.teleport(lobbyLocation);
+        }
+    }
+
+    public static void giveColorItemInHotbar(Material material) {
+        if (world == null) {
+            return;
+        }
+        final ItemStack item = new ItemStack(material);
+
+        for (Player player : world.getPlayers()) {
+            player.getInventory().setItem(4, item);
+            player.updateInventory();
+        }
+    }
+
+    public static void removeAllItems() {
+        if (world == null) {
+            return;
+        }
+
+        for (Player player : world.getPlayers()) {
+            player.getInventory().clear();
         }
     }
 }
