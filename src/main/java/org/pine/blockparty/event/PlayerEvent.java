@@ -36,6 +36,7 @@ public class PlayerEvent implements Listener {
             uiManager.updateScoreboardRoundInfo(currentRound.getParticipants().size(), currentRound.getDifficulty().getLevel(),
                     currentRound.getDifficulty().getTimeInSeconds());
         }
+        player.showBossBar(uiManager.getBossBar());
     }
 
     @EventHandler

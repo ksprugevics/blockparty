@@ -10,6 +10,7 @@ import org.pine.blockparty.exceptions.BlockpartyException;
 import org.pine.blockparty.model.Difficulty;
 import org.pine.blockparty.model.GameState;
 import org.pine.blockparty.model.Round;
+import org.pine.blockparty.model.XBlock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,6 +76,7 @@ public class GameManager {
 
         teleportAllPlayersToLobby();
         platformToPattern(levelManager.getStartingLevel().getPattern());
+        uiManager.updateBossBar(Component.text("§5§lBlockparty"));
 
         if (currentGameTask != null) {
             currentGameTask.cancel();
@@ -84,7 +86,7 @@ public class GameManager {
     }
 
     public void playerLeft(Player player) {
-        if (currentRound.getParticipants().contains(player)) {
+        if (currentRound != null && currentRound.getParticipants().contains(player)) {
             playerEliminated(player);
         }
     }
@@ -130,6 +132,7 @@ public class GameManager {
         currentRound = new Round(levelManager.getStartingLevel(), Difficulty.LVL_1, world.getPlayers());
         logger.info("Starting game with players: {}", currentRound.getParticipants().stream().map(Player::getName).collect(Collectors.joining(", ")));
         uiManager.updateScoreboard(world.getPlayers().size(), currentRound.getDifficulty().getLevel(), currentRound.getDifficulty().getTimeInSeconds(), 1, 1);
+        uiManager.updateBossBar(Component.text("Preparing").color(XBlock.WHITE.getDisplayText().color()));
         startSplash();
 
         currentState = GameState.SHOW_XBLOCK;
@@ -139,6 +142,7 @@ public class GameManager {
     private void processGameStateChangePlatform() {
         platformToPattern(currentRound.getLevel().getPattern());
         logger.info("Changing level to: {}", currentRound.getLevel().getName());
+        uiManager.updateBossBar(Component.text("Preparing").color(XBlock.WHITE.getDisplayText().color()));
 
         currentState = GameState.SHOW_XBLOCK;
         scheduleNextStateAfterDelay(SHOW_XBLOCK_AFTER_TICKS);
@@ -146,12 +150,13 @@ public class GameManager {
 
     private void processGameStateShowXBlock() {
         colorCountdown(blockparty, currentRound.getxBlock().getDisplayText(), (int) currentRound.getDifficulty().getTimeInTicks() / 10 - 1);
+        uiManager.updateBossBar(currentRound.getxBlock().getDisplayText());
         currentState = GameState.XBLOCK_REMOVAL;
         scheduleNextStateAfterDelay(currentRound.getDifficulty().getTimeInTicks());
     }
 
     private void processGameStateXBlockRemoval() {
-        broadcastActionBar(Component.text("X Stop X"));
+        broadcastActionBar(Component.text("§c§lX Stop X"));
         platformRemoveXBlock(currentRound.getxBlock().getMaterial());
 
         currentState = GameState.ROUND_EVALUATION;
@@ -178,9 +183,9 @@ public class GameManager {
 
     private void processGameStateWinConditionTie() {
         if (singlePlayerMode) {
-            broadcastTitle(Component.text("§d§lYou lose!"), Component.empty());
+            broadcastTitle(Component.text("§c§lYou lose!"), Component.empty());
         } else {
-            broadcastTitle(Component.text("§d§lTie - you all lost!"), Component.empty());
+            broadcastTitle(Component.text("§c§lTie - you all lost!"), Component.empty());
         }
         platformToPattern(levelManager.getStartingLevel().getPattern());
         teleportPlayersToPlatform(currentRound.getEliminations());
@@ -190,7 +195,7 @@ public class GameManager {
     }
 
     private void processGameStateWinConditionWinner() {
-        broadcastTitle(Component.text("§a§l" + currentRound.getParticipants().getFirst().getName() + " won!"), Component.empty());
+        broadcastTitle(Component.text("§b§l" + currentRound.getParticipants().getFirst().getName() + " won!"), Component.empty());
         platformToPattern(levelManager.getStartingLevel().getPattern());
 
         currentState = GameState.GAME_OVER;

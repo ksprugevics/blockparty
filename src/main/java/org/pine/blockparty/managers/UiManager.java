@@ -1,5 +1,6 @@
 package org.pine.blockparty.managers;
 
+import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -12,7 +13,6 @@ import org.bukkit.scoreboard.*;
 import org.pine.blockparty.model.XBlock;
 
 import java.time.Duration;
-import java.util.List;
 
 import static net.kyori.adventure.text.Component.join;
 
@@ -28,10 +28,30 @@ public class UiManager {
     private final Scoreboard scoreboard;
     private final Objective objective;
 
+    private BossBar bossBar;
+
     public UiManager() {
         this.scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
         this.objective = scoreboard.registerNewObjective("sidebar", Criteria.create("bpstats"), sidebarTitle);
         this.objective.setDisplaySlot(DisplaySlot.SIDEBAR);
+        initializeDefaultBossbar();
+    }
+
+    public BossBar getBossBar() {
+        return bossBar;
+    }
+
+    public void initializeDefaultBossbar() {
+        this.bossBar = BossBar.bossBar(
+                Component.text("§5§lBlockparty"),
+                0f,
+                BossBar.Color.WHITE,
+                BossBar.Overlay.PROGRESS
+        );
+    }
+
+    public void updateBossBar(Component text) {
+        this.bossBar.name(text.decorate(TextDecoration.BOLD));
     }
 
     public static void startSplash() {
