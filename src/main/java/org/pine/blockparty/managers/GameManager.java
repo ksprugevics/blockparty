@@ -133,7 +133,7 @@ public class GameManager {
 
     private void processGameStateStartingFirstRound() {
         platformToPattern(levelManager.getStartingLevel().getPattern());
-        teleportAllPlayersToPlatform();
+        teleportAllPlayersToStartingPlatform();
 
         currentRound = new Round(levelManager.getStartingLevel(), Difficulty.LVL_1, world.getPlayers());
         logger.info("Starting game with players: {}", currentRound.getParticipants().stream().map(Player::getName).collect(Collectors.joining(", ")));
