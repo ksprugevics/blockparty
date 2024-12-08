@@ -5,21 +5,24 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
-import org.bukkit.Bukkit;
-import org.bukkit.World;
+import org.bukkit.*;
+import org.bukkit.entity.Firework;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scoreboard.*;
 import org.pine.blockparty.model.SoundEffect;
 import org.pine.blockparty.model.XBlock;
 
 import java.time.Duration;
+import java.util.Random;
 
 import static net.kyori.adventure.text.Component.join;
 
 public class UiManager {
 
     private static final World world = Bukkit.getWorld("world");
+    private static final Random random = new Random();
 
     private static final Component sidebarTitle = Component.text("§e§lBlockparty").decorate(TextDecoration.BOLD);
     private static final Duration fadeIn = Duration.ofSeconds(1L);
@@ -143,6 +146,37 @@ public class UiManager {
 
     public void updateScoreboardRoundParticipants(int playersLeft) {
         updateLine(8, Component.text(playersLeft).append(Component.text(" Dancers").color(XBlock.LIGHT_GRAY.getDisplayText().color())));
+    }
+
+    public static void launchRandomFirework() {
+        Location location = PlayerManager.startingLocations.get(random.nextInt(PlayerManager.startingLocations.size()));
+        World world = location.getWorld();
+        if (world == null) return;
+
+        Firework firework = world.spawn(location, Firework.class);
+        FireworkMeta meta = firework.getFireworkMeta();
+
+        // Random firework effect
+        FireworkEffect effect = FireworkEffect.builder()
+                .flicker(random.nextBoolean())
+                .withColor(getRandomColor(), getRandomColor())
+                .withFade(getRandomColor())
+                .with(getRandomType())
+                .trail(random.nextBoolean())
+                .build();
+
+        meta.addEffect(effect);
+        meta.setPower(random.nextInt(2) + 1);
+        firework.setFireworkMeta(meta);
+    }
+
+    private static Color getRandomColor() {
+        return Color.fromRGB(random.nextInt(256), random.nextInt(256), random.nextInt(256));
+    }
+
+    private static FireworkEffect.Type getRandomType() {
+        FireworkEffect.Type[] types = FireworkEffect.Type.values();
+        return types[random.nextInt(types.length)];
     }
 
     private void updateLine(int line, Component text) {

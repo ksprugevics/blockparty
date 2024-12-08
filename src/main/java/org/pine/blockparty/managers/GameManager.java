@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.pine.blockparty.Blockparty;
 import org.pine.blockparty.exceptions.BlockpartyException;
@@ -186,7 +187,7 @@ public class GameManager {
         } else if (!singlePlayerMode && roundParticipants.size() == 1) {
             currentState = GameState.WIN_CONDITION_WINNER;
         } else {
-            currentState = GameState.UPDATE_DIFFICULTY;
+            currentState = GameState.WIN_CONDITION_WINNER;
         }
 
         scheduleNextStateAfterDelay(0L);
@@ -208,9 +209,10 @@ public class GameManager {
     private void processGameStateWinConditionWinner() {
         broadcastTitle(Component.text("§b§l" + currentRound.getParticipants().getFirst().getName() + " won!"), Component.empty());
         platformToPattern(levelManager.getStartingLevel().getPattern());
+        launchFireworkShow();
 
         currentState = GameState.GAME_OVER;
-        scheduleNextStateAfterDelay(0L);
+        scheduleNextStateAfterDelay(240L);
     }
 
     private void processGameStateWinConditionRoundEnd() {
@@ -222,9 +224,10 @@ public class GameManager {
                     Component.text("§e§lare the winners!"));
         }
         platformToPattern(levelManager.getStartingLevel().getPattern());
+        launchFireworkShow();
 
         currentState = GameState.GAME_OVER;
-        scheduleNextStateAfterDelay(0L);
+        scheduleNextStateAfterDelay(240L);
     }
 
     private void processGameStateUpdateDifficulty() {
@@ -239,5 +242,22 @@ public class GameManager {
 
         currentState = GameState.CHANGE_PLATFORM;
         scheduleNextStateAfterDelay(0L);
+    }
+
+    private void launchFireworkShow() {
+        new BukkitRunnable() {
+            int count = 0;
+
+            @Override
+            public void run() {
+                if (count >= 15) {
+                    cancel();
+                    return;
+                }
+
+                UiManager.launchRandomFirework();
+                count++;
+            }
+        }.runTaskTimer(blockparty, 0L, 25L);
     }
 }

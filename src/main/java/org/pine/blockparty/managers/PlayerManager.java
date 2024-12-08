@@ -17,7 +17,7 @@ public class PlayerManager {
     private static final Location lobbyLocation = new Location(world, -11.5, 11.5, 16.5, 270f, 0f);
     private static final Location platformLocation = new Location(world, 16.5, 1, 16.5, 270f, 0f);
 
-    private static final List<Location> startingLocations = List.of(
+    public static final List<Location> startingLocations = List.of(
         new Location(world, 3, 1, 4, 270f, 0f),
         new Location(world, 3, 1, 8, 270f, 0f),
         new Location(world, 3, 1, 12, 270f, 0f),
