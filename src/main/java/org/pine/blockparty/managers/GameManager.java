@@ -187,7 +187,7 @@ public class GameManager {
         } else if (!singlePlayerMode && roundParticipants.size() == 1) {
             currentState = GameState.WIN_CONDITION_WINNER;
         } else {
-            currentState = GameState.WIN_CONDITION_WINNER;
+            currentState = GameState.UPDATE_DIFFICULTY;
         }
 
         scheduleNextStateAfterDelay(0L);
