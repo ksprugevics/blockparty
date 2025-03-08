@@ -10,17 +10,18 @@ import org.pine.blockparty.model.Arena;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.pine.blockparty.configuration.Command.*;
 import static org.pine.blockparty.managers.PlatformManager.platformToPattern;
 import static org.pine.blockparty.managers.UiManager.sendMessageToPlayerInChat;
 
 public class CommandManager implements CommandExecutor, TabCompleter {
 
     private final GameManager gameManager;
-    private final LevelManager levelManager;
+    private final ArenaManager arenaManager;
 
-    public CommandManager(GameManager gameManager, LevelManager levelManager) {
+    public CommandManager(GameManager gameManager, ArenaManager arenaManager) {
         this.gameManager = gameManager;
-        this.levelManager = levelManager;
+        this.arenaManager = arenaManager;
     }
 
     @Override
@@ -30,19 +31,18 @@ public class CommandManager implements CommandExecutor, TabCompleter {
             return false;
         }
 
-        return switch (command.getName()) {
-            case "bpstart" -> handleStartCommand();
-            case "bpstop" -> handleStopCommand();
-            case "bplvlinfo" -> handleLevelInfoCommand(player);
-            case "bplvl" -> handleLevelCommand(player, args);
-            default -> false;
+        return switch (mapFromBukkitCommand(command)) {
+            case START_GAME -> handleStartCommand();
+            case STOP_GAME -> handleStopCommand();
+            case ARENA_INFO -> handleLevelInfoCommand(player);
+            case SET_ARENA -> handleLevelCommand(player, args);
         };
     }
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        if (command.getName().equals("bplvl") && args.length == 1) {
-            return levelManager.getLevelList().stream().map(Arena::name)
+        if (mapFromBukkitCommand(command).equals(SET_ARENA) && args.length == 1) {
+            return arenaManager.getArenaList().stream().map(Arena::name)
                     .filter(name -> name.toLowerCase().startsWith(args[0].toLowerCase()))
                     .collect(Collectors.toList());
         }
@@ -60,7 +60,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
     }
 
     private boolean handleLevelInfoCommand(Player player) {
-        sendMessageToPlayerInChat(player, levelManager.getLevelInfo());
+        sendMessageToPlayerInChat(player, arenaManager.getArenaInfo());
         return true;
     }
 
@@ -70,7 +70,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
             return false;
         }
 
-        final Arena arena = levelManager.getLevelByName(args[0]);
+        final Arena arena = arenaManager.getArenaByName(args[0]);
         if (arena == null) {
             sendMessageToPlayerInChat(player, "Level not loaded");
             return false;

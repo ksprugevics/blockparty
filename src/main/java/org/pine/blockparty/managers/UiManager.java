@@ -25,9 +25,9 @@ public class UiManager {
     private static final Random random = new Random();
 
     private static final Component sidebarTitle = Component.text("§e§lBlockparty").decorate(TextDecoration.BOLD);
-    private static final Duration fadeIn = Duration.ofSeconds(1L);
-    private static final Duration stay = Duration.ofSeconds(3L);
-    private static final Duration fadeOut = Duration.ofSeconds(1L);
+    private static final Duration fadeIn = Duration.ofSeconds(1L); // TODO again, maybe need to move to duration
+    private static final Duration stay = Duration.ofSeconds(3L); // TODO again, maybe need to move to duration
+    private static final Duration fadeOut = Duration.ofSeconds(1L); // TODO again, maybe need to move to duration
 
     private final Scoreboard scoreboard;
     private final Objective objective;

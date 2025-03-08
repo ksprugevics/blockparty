@@ -17,6 +17,7 @@ import static org.pine.blockparty.managers.PlayerManager.teleportPlayerToLobby;
 public class PlayerEvent implements Listener {
 
     private static final int FALL_THRESHOLD_Y = -5;
+
     private final GameManager gameManager;
     private final UiManager uiManager;
 
@@ -27,6 +28,7 @@ public class PlayerEvent implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
+        // todo simplify
         final Player player = event.getPlayer();
         player.setGameMode(GameMode.ADVENTURE);
         teleportPlayerToLobby(player);
@@ -48,8 +50,8 @@ public class PlayerEvent implements Listener {
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
         final Player player = event.getPlayer();
-        final Location loc = player.getLocation();
-        if (loc.getY() < FALL_THRESHOLD_Y) {
+        final Location location = player.getLocation();
+        if (location.getY() < FALL_THRESHOLD_Y) {
             gameManager.playerEliminated(player);
         }
     }
