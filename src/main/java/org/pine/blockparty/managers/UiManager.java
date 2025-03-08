@@ -11,8 +11,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scoreboard.*;
-import org.pine.blockparty.model.SoundEffect;
 import org.pine.blockparty.model.XBlock;
+import org.pine.blockparty.model.sound.SoundEffect;
 
 import java.time.Duration;
 import java.util.Random;
@@ -102,9 +102,9 @@ public class UiManager {
         }
 
         switch (counter) {
-            case 4 -> SoundManager.playSound(SoundEffect.DINK1);
-            case 2 -> SoundManager.playSound(SoundEffect.DINK2);
-            case 0 -> SoundManager.playSound(SoundEffect.DINK3);
+            case 4 -> SoundManager.playSoundEffect(SoundEffect.DINK1);
+            case 2 -> SoundManager.playSoundEffect(SoundEffect.DINK2);
+            case 0 -> SoundManager.playSoundEffect(SoundEffect.DINK3);
         }
 
         Component out = join(JoinConfiguration.noSeparators(), Component.text("█ ".repeat(counter / 2)), color, Component.text(" █".repeat(counter / 2))).decorate(TextDecoration.BOLD).color(color.color());

@@ -9,22 +9,21 @@ import java.util.Random;
 
 public class Round {
 
-    private final Level level;
+    private final Arena arena;
     private final XBlock xBlock;
     private final List<Player> participants;
-    private Difficulty difficulty;
-    private List<Player> eliminations;
+    private final Difficulty difficulty;
+    private List<Player> eliminations = new ArrayList<>();
 
-    public Round(Level level, Difficulty difficulty, List<Player> participants) {
-        this.level = level;
+    public Round(Arena arena, Difficulty difficulty, List<Player> participants) {
+        this.arena = arena;
         this.difficulty = difficulty;
         this.participants = participants;
         this.xBlock = selectXBlock();
-        this.eliminations = new ArrayList<>();
     }
 
-    public Level getLevel() {
-        return level;
+    public Arena getArena() {
+        return arena;
     }
 
     public XBlock getxBlock() {
@@ -35,17 +34,17 @@ public class Round {
         return participants;
     }
 
-    public List<Player> getEliminations() {
-        return eliminations;
-    }
-
     public Difficulty getDifficulty() {
         return difficulty;
     }
 
+    public List<Player> getEliminations() {
+        return eliminations;
+    }
+
     private XBlock selectXBlock() {
         final Random random = new Random();
-        final List<Material> levelBlocks = level.getBlocks();
+        final List<Material> levelBlocks = this.arena.uniqueBlocks();
         return XBlock.fromMaterial(levelBlocks.get(random.nextInt(levelBlocks.size())));
     }
 }

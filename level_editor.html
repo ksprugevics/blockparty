@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Blockparty level editor</title>
+    <title>Blockparty arena editor</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -66,7 +66,7 @@
     </style>
 </head>
 <body>
-<h1>Blockparty level editor</h1>
+<h1>Blockparty arena editor</h1>
 
 <textarea id="import-input" placeholder="Paste your JSON grid here to import"></textarea>
 <div class="button-container">
@@ -333,8 +333,8 @@
 
         const exportObj = {
             name: "test1",
-            enable: true,
-            blocks: uniqueColors,
+            enabled: true,
+            uniqueBlocks: uniqueColors,
             pattern: blockGrid
         };
 

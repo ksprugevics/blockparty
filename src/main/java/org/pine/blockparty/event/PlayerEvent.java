@@ -33,8 +33,8 @@ public class PlayerEvent implements Listener {
         uiManager.showScoreboardToPlayer(player);
         final Round currentRound = gameManager.getCurrentRound();
         if (currentRound != null) {
-            uiManager.updateScoreboardRoundInfo(currentRound.getParticipants().size(), currentRound.getDifficulty().getLevel(),
-                    currentRound.getDifficulty().getTimeInSeconds());
+            uiManager.updateScoreboardRoundInfo(currentRound.getParticipants().size(), currentRound.getDifficulty().getCounter(),
+                    currentRound.getDifficulty().getDurationInSecondsLabel());
         }
         player.showBossBar(uiManager.getBossBar());
     }

@@ -5,7 +5,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
-import org.pine.blockparty.model.Level;
+import org.pine.blockparty.model.Arena;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,7 +42,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
         if (command.getName().equals("bplvl") && args.length == 1) {
-            return levelManager.getLevelList().stream().map(Level::getName)
+            return levelManager.getLevelList().stream().map(Arena::name)
                     .filter(name -> name.toLowerCase().startsWith(args[0].toLowerCase()))
                     .collect(Collectors.toList());
         }
@@ -70,13 +70,13 @@ public class CommandManager implements CommandExecutor, TabCompleter {
             return false;
         }
 
-        final Level level = levelManager.getLevelByName(args[0]);
-        if (level == null) {
+        final Arena arena = levelManager.getLevelByName(args[0]);
+        if (arena == null) {
             sendMessageToPlayerInChat(player, "Level not loaded");
             return false;
         }
 
-        platformToPattern(level.getPattern());
+        platformToPattern(arena.pattern());
         return true;
     }
 }

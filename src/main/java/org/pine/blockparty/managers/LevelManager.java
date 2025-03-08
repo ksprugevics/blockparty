@@ -3,7 +3,7 @@ package org.pine.blockparty.managers;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import org.pine.blockparty.exceptions.LevelLoadException;
-import org.pine.blockparty.model.Level;
+import org.pine.blockparty.model.Arena;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,46 +22,46 @@ public class LevelManager {
 
     private static final Logger logger = LoggerFactory.getLogger(LevelManager.class);
     private static final Random random = new Random();
-    private final List<Level> levelList = new ArrayList<>();
+    private final List<Arena> arenaList = new ArrayList<>();
 
     public LevelManager() {
         loadLevels();
     }
 
-    public List<Level> getLevelList() {
-        return levelList;
+    public List<Arena> getLevelList() {
+        return arenaList;
     }
 
-    public Level getLevelByName(String name) {
-        return levelList.stream().filter(lvl -> Objects.equals(lvl.getName(), name)).findFirst().orElse(null);
+    public Arena getLevelByName(String name) {
+        return arenaList.stream().filter(lvl -> Objects.equals(lvl.name(), name)).findFirst().orElse(null);
     }
 
     public String getLevelInfo() {
-        return "Total enabled level count = " + levelList.size() + ", levels = " +
-                levelList.stream().map(Level::getName).collect(Collectors.joining(", "));
+        return "Total enabled level count = " + arenaList.size() + ", levels = " +
+                arenaList.stream().map(Arena::name).collect(Collectors.joining(", "));
     }
 
-    public Level getRandomLevel() {
-        return levelList.get(random.nextInt(1, levelList.size()));
+    public Arena getRandomLevel() {
+        return arenaList.get(random.nextInt(1, arenaList.size()));
     }
 
-    public Level getStartingLevel() {
-        return levelList.getFirst();
+    public Arena getStartingLevel() {
+        return arenaList.getFirst();
     }
 
     private void loadLevels() {
-        final List<Level> allLevels = loadLevelsFromFile();
-        final List<Level> enabledLevels = allLevels.stream().filter(Level::isEnable).toList();
-        levelList.addAll(enabledLevels);
+        final List<Arena> allArenas = loadLevelsFromFile();
+        final List<Arena> enabledArenas = allArenas.stream().filter(Arena::enabled).toList();
+        arenaList.addAll(enabledArenas);
         logger.info("Successfully loaded levels from file: {}", getLevelInfo());
     }
 
-    private List<Level> loadLevelsFromFile() {
+    private List<Arena> loadLevelsFromFile() {
         final Gson gson = new Gson();
 
         try (FileReader reader = new FileReader(LEVEL_FILE_PATH)) {
-            final Type type = new TypeToken<List<Level>>() {}.getType();
-            final List<Level> loadedData = gson.fromJson(reader, type);
+            final Type type = new TypeToken<List<Arena>>() {}.getType();
+            final List<Arena> loadedData = gson.fromJson(reader, type);
 
             if (loadedData == null || loadedData.isEmpty()) {
                 throw new LevelLoadException("No levels found. File is empty?");

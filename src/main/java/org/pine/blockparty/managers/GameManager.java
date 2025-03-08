@@ -22,6 +22,7 @@ import static org.pine.blockparty.managers.PlatformManager.platformRemoveXBlock;
 import static org.pine.blockparty.managers.PlatformManager.platformToPattern;
 import static org.pine.blockparty.managers.PlayerManager.*;
 import static org.pine.blockparty.managers.UiManager.*;
+import static org.pine.blockparty.model.Difficulty.*;
 
 public class GameManager {
 
@@ -51,7 +52,7 @@ public class GameManager {
             throw new BlockpartyException("Can't start game, world reference is null");
         }
 
-        platformToPattern(levelManager.getStartingLevel().getPattern());
+        platformToPattern(levelManager.getStartingLevel().pattern());
     }
 
     public Round getCurrentRound() {
@@ -67,7 +68,7 @@ public class GameManager {
         singlePlayerMode = world.getPlayers().size() == 1;
         removeAllItems();
 
-        currentState = GameState.STARTING_FIRST_ROUND;
+        currentState = GameState.FIRST_ROUND_START;
         processGameLoop();
     }
 
@@ -77,7 +78,7 @@ public class GameManager {
         }
 
         teleportAllPlayersToLobby();
-        platformToPattern(levelManager.getStartingLevel().getPattern());
+        platformToPattern(levelManager.getStartingLevel().pattern());
         removeAllItems();
         uiManager.updateBossBar(Component.text("§5§lBlockparty"));
         SoundManager.stopMusic();
@@ -118,53 +119,53 @@ public class GameManager {
         logger.info("Processing game state: {}", currentState);
 
         switch (currentState) {
-            case STARTING_FIRST_ROUND -> processGameStateStartingFirstRound();
-            case CHANGE_PLATFORM -> processGameStateChangePlatform();
-            case SHOW_XBLOCK -> processGameStateShowXBlock();
+            case FIRST_ROUND_START -> processGameStateStartingFirstRound();
+            case PLATFORM_CHANGE -> processGameStateChangePlatform();
+            case XBLOCK_DISPLAY -> processGameStateShowXBlock();
             case XBLOCK_REMOVAL -> processGameStateXBlockRemoval();
             case ROUND_EVALUATION -> processGameStateRoundEvaluation();
-            case UPDATE_DIFFICULTY -> processGameStateUpdateDifficulty();
+            case DIFFICULTY_UPDATE -> processGameStateUpdateDifficulty();
             case WIN_CONDITION_TIE -> processGameStateWinConditionTie();
-            case WIN_CONDITION_WINNER -> processGameStateWinConditionWinner();
-            case WIN_CONDITION_ROUND_END -> processGameStateWinConditionRoundEnd();
+            case WIN_CONDITION_SINGLE_WINNER -> processGameStateWinConditionWinner();
+            case WIN_CONDITION_MAX_ROUNDS_EXCEEDED -> processGameStateWinConditionRoundEnd();
             case GAME_OVER -> stopGame();
             default -> throw new BlockpartyException("Unsupported game state: " + currentState);
         }
     }
 
     private void processGameStateStartingFirstRound() {
-        platformToPattern(levelManager.getStartingLevel().getPattern());
+        platformToPattern(levelManager.getStartingLevel().pattern());
         teleportAllPlayersToStartingPlatform();
 
-        currentRound = new Round(levelManager.getStartingLevel(), Difficulty.LVL_1, world.getPlayers());
+        currentRound = new Round(levelManager.getStartingLevel(), DIFFICULTY_1, world.getPlayers());
         logger.info("Starting game with players: {}", currentRound.getParticipants().stream().map(Player::getName).collect(Collectors.joining(", ")));
-        uiManager.updateScoreboard(world.getPlayers().size(), currentRound.getDifficulty().getLevel(), currentRound.getDifficulty().getTimeInSeconds(), 1, 1);
+        uiManager.updateScoreboard(world.getPlayers().size(), currentRound.getDifficulty().getCounter(), currentRound.getDifficulty().getDurationInSecondsLabel(), 1, 1);
         uiManager.updateBossBar(Component.text("Preparing").color(XBlock.WHITE.getDisplayText().color()));
         startSplash();
         SoundManager.playMusic();
 
 
-        currentState = GameState.SHOW_XBLOCK;
+        currentState = GameState.XBLOCK_DISPLAY;
         scheduleNextStateAfterDelay(STARTING_TIMER_TICKS);
     }
 
     private void processGameStateChangePlatform() {
-        platformToPattern(currentRound.getLevel().getPattern());
-        logger.info("Changing level to: {}", currentRound.getLevel().getName());
+        platformToPattern(currentRound.getArena().pattern());
+        logger.info("Changing level to: {}", currentRound.getArena().name());
         uiManager.updateBossBar(Component.text("Preparing").color(XBlock.WHITE.getDisplayText().color()));
         removeAllItems();
 
-        currentState = GameState.SHOW_XBLOCK;
+        currentState = GameState.XBLOCK_DISPLAY;
         scheduleNextStateAfterDelay(SHOW_XBLOCK_AFTER_TICKS);
     }
 
     private void processGameStateShowXBlock() {
-        colorCountdown(blockparty, currentRound.getxBlock().getDisplayText(), (int) currentRound.getDifficulty().getTimeInTicks() / 10 - 1);
+        colorCountdown(blockparty, currentRound.getxBlock().getDisplayText(), (int) currentRound.getDifficulty().getDurationInTicks() / 10 - 1);
         uiManager.updateBossBar(currentRound.getxBlock().getDisplayText());
         giveColorItemInHotbar(currentRound.getxBlock().getMaterial());
 
         currentState = GameState.XBLOCK_REMOVAL;
-        scheduleNextStateAfterDelay(currentRound.getDifficulty().getTimeInTicks());
+        scheduleNextStateAfterDelay(currentRound.getDifficulty().getDurationInTicks());
     }
 
     private void processGameStateXBlockRemoval() {
@@ -182,12 +183,12 @@ public class GameManager {
         roundParticipants.removeAll(roundEliminations);
         if (roundParticipants.isEmpty()) {
             currentState = GameState.WIN_CONDITION_TIE;
-        } else if (Difficulty.getNextDifficulty(currentRound.getDifficulty()) == Difficulty.BLANK) {
-            currentState = GameState.WIN_CONDITION_ROUND_END;
+        } else if (getNextDifficulty(currentRound.getDifficulty()) == DIFFICULTY_0) {
+            currentState = GameState.WIN_CONDITION_MAX_ROUNDS_EXCEEDED;
         } else if (!singlePlayerMode && roundParticipants.size() == 1) {
-            currentState = GameState.WIN_CONDITION_WINNER;
+            currentState = GameState.WIN_CONDITION_SINGLE_WINNER;
         } else {
-            currentState = GameState.UPDATE_DIFFICULTY;
+            currentState = GameState.DIFFICULTY_UPDATE;
         }
 
         scheduleNextStateAfterDelay(0L);
@@ -199,7 +200,7 @@ public class GameManager {
         } else {
             broadcastTitle(Component.text("§c§lTie - you all lost!"), Component.empty());
         }
-        platformToPattern(levelManager.getStartingLevel().getPattern());
+        platformToPattern(levelManager.getStartingLevel().pattern());
         teleportPlayersToPlatform(currentRound.getEliminations());
 
         currentState = GameState.GAME_OVER;
@@ -208,7 +209,7 @@ public class GameManager {
 
     private void processGameStateWinConditionWinner() {
         broadcastTitle(Component.text("§b§l" + currentRound.getParticipants().getFirst().getName() + " won!"), Component.empty());
-        platformToPattern(levelManager.getStartingLevel().getPattern());
+        platformToPattern(levelManager.getStartingLevel().pattern());
         launchFireworkShow();
 
         currentState = GameState.GAME_OVER;
@@ -223,7 +224,7 @@ public class GameManager {
                     currentRound.getParticipants().stream().map(Player::getName).collect(Collectors.joining(", "))),
                     Component.text("§e§lare the winners!"));
         }
-        platformToPattern(levelManager.getStartingLevel().getPattern());
+        platformToPattern(levelManager.getStartingLevel().pattern());
         launchFireworkShow();
 
         currentState = GameState.GAME_OVER;
@@ -232,15 +233,15 @@ public class GameManager {
 
     private void processGameStateUpdateDifficulty() {
         final List<Player> roundParticipants = currentRound.getParticipants();
-        Difficulty nextDifficulty = Difficulty.getNextDifficulty(currentRound.getDifficulty());
+        Difficulty nextDifficulty = getNextDifficulty(currentRound.getDifficulty());
         currentRound = new Round(levelManager.getRandomLevel(), nextDifficulty, roundParticipants);
 
-        logger.info("Increasing speed level to: {}", nextDifficulty.getTimeInSeconds());
+        logger.info("Increasing speed level to: {}", nextDifficulty.getDurationInSecondsLabel());
         logger.info("Participants left: {}", roundParticipants.stream().map(Player::getName).collect(Collectors.joining(", ")));
 
-        uiManager.updateScoreboardRoundInfo(roundParticipants.size(), nextDifficulty.getLevel(), nextDifficulty.getTimeInSeconds());
+        uiManager.updateScoreboardRoundInfo(roundParticipants.size(), nextDifficulty.getCounter(), nextDifficulty.getDurationInSecondsLabel());
 
-        currentState = GameState.CHANGE_PLATFORM;
+        currentState = GameState.PLATFORM_CHANGE;
         scheduleNextStateAfterDelay(0L);
     }
 

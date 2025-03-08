@@ -4,13 +4,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.SoundCategory;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.pine.blockparty.model.SoundEffect;
+import org.pine.blockparty.model.sound.Music;
+import org.pine.blockparty.model.sound.SoundEffect;
 
 public class SoundManager {
 
     private static final World world = Bukkit.getWorld("world");
 
-    public static boolean playSound(SoundEffect sound) {
+    public static boolean playSoundEffect(SoundEffect sound) {
         if (world == null) {
             return false;
         }
@@ -27,7 +28,7 @@ public class SoundManager {
             return;
         }
 
-        final SoundEffect currentSong = SoundEffect.getRandomSong();
+        final Music currentSong = Music.getRandomSong();
         for (Player player : world.getPlayers()) {
             player.playSound(currentSong.getSound(), player);
         }
