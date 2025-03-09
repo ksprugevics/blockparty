@@ -1,16 +1,15 @@
 package org.pine.blockparty;
 
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.pine.blockparty.configuration.Command;
 import org.pine.blockparty.configuration.Configuration;
 import org.pine.blockparty.event.PlayerEvent;
 import org.pine.blockparty.exceptions.ArenaLoadException;
-import org.pine.blockparty.managers.ArenaManager;
-import org.pine.blockparty.managers.CommandManager;
-import org.pine.blockparty.managers.GameManager;
-import org.pine.blockparty.managers.UiManager;
+import org.pine.blockparty.exceptions.WorldNullException;
+import org.pine.blockparty.managers.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +20,8 @@ public class Blockparty extends JavaPlugin {
 
     private static final Logger logger = LoggerFactory.getLogger(Blockparty.class);
 
+    private World gameWorld;
+    private ConfigurationManager configurationManager;
     private GameManager gameManager;
     private ArenaManager arenaManager;
     private CommandManager commandManager;
@@ -31,6 +32,8 @@ public class Blockparty extends JavaPlugin {
         final PluginManager pluginManager = Bukkit.getServer().getPluginManager();
 
         try {
+            initializeConfigurationManager();
+            initializeWorld();
             initializeLevelManager();
             initializeUiManager();
             initializeGameManager();
@@ -52,8 +55,20 @@ public class Blockparty extends JavaPlugin {
         logger.info("Blockparty plugin disabled");
     }
 
+    private void initializeConfigurationManager() {
+        this.configurationManager = new ConfigurationManager(getConfig());
+    }
+
+    private void initializeWorld() {
+        World gameWorld = Bukkit.getWorld(configurationManager.getConfigurationValue(Configuration.WORLD_NAME));
+        if (gameWorld == null) {
+            throw new WorldNullException();
+        }
+        this.gameWorld = gameWorld;
+    }
+
     private void initializeLevelManager() throws ArenaLoadException {
-        this.arenaManager = new ArenaManager(getConfig().getString(Configuration.ARENA_FILE_PATH.getKey()));
+        this.arenaManager = new ArenaManager(configurationManager.getConfigurationValue(Configuration.ARENA_FILE_PATH));
     }
 
     private void initializeGameManager() {
