@@ -5,36 +5,35 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
-import org.bukkit.*;
-import org.bukkit.entity.Firework;
+import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scoreboard.*;
 import org.pine.blockparty.model.XBlock;
 import org.pine.blockparty.model.sound.SoundEffect;
 
 import java.time.Duration;
-import java.util.Random;
 
 import static net.kyori.adventure.text.Component.join;
 
 public class UiManager {
-
-    private static final World world = Bukkit.getWorld("world");
-    private static final Random random = new Random();
 
     private static final Component sidebarTitle = Component.text("§e§lBlockparty").decorate(TextDecoration.BOLD);
     private static final Duration fadeIn = Duration.ofSeconds(1L); // TODO again, maybe need to move to duration
     private static final Duration stay = Duration.ofSeconds(3L); // TODO again, maybe need to move to duration
     private static final Duration fadeOut = Duration.ofSeconds(1L); // TODO again, maybe need to move to duration
 
+    private final SoundManager soundManager;
+    private final World gameWorld;
     private final Scoreboard scoreboard;
     private final Objective objective;
 
     private BossBar bossBar;
 
-    public UiManager() {
+    public UiManager(World gameWorld, SoundManager soundManager) {
+        this.gameWorld = gameWorld;
+        this.soundManager = soundManager;
         this.scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
         this.objective = scoreboard.registerNewObjective("sidebar", Criteria.create("bpstats"), sidebarTitle);
         this.objective.setDisplaySlot(DisplaySlot.SIDEBAR);
@@ -58,57 +57,45 @@ public class UiManager {
         this.bossBar.name(text.decorate(TextDecoration.BOLD));
     }
 
-    public static void startSplash() {
+    public void startSplash() {
         broadcastTitle(Component.text("§e§lBlockparty"), Component.text("§lTime to DANCE!"));
     }
 
-    public static void broadcastTitle(Component title, Component subtitle) {
-        if (world == null) {
-            return;
-        }
+    public void broadcastTitle(Component title, Component subtitle) {
 
-        for (Player player : world.getPlayers()) {
+        for (Player player : gameWorld.getPlayers()) {
             player.showTitle(Title.title(title, subtitle, Title.Times.times(fadeIn, stay, fadeOut)));
         }
     }
 
-    public static void sendMessageToPlayerInChat(Player player, String msg) {
+    public void sendMessageToPlayerInChat(Player player, String msg) {
         player.sendMessage(msg);
     }
 
-    public static void broadcastInChat(String msg) {
-        if (world == null) {
-            return;
-        }
+    public void broadcastInChat(String msg) {
 
-        for (Player player : world.getPlayers()) {
+        for (Player player : gameWorld.getPlayers()) {
             player.sendMessage(msg);
         }
     }
 
-    public static void broadcastActionBar(Component textComponent) {
-        if (world == null) {
-            return;
-        }
+    public void broadcastActionBar(Component textComponent) {
 
-        for (Player player : world.getPlayers()) {
+        for (Player player : gameWorld.getPlayers()) {
             player.sendActionBar(textComponent.decorate(TextDecoration.BOLD));
         }
     }
 
-    public static void colorCountdown(Plugin plugin, Component color, int counter) {
-        if (world == null || counter < 0) {
-            return;
-        }
+    public void colorCountdown(Plugin plugin, Component color, int counter) {
 
         switch (counter) {
-            case 4 -> SoundManager.playSoundEffect(SoundEffect.DINK1);
-            case 2 -> SoundManager.playSoundEffect(SoundEffect.DINK2);
-            case 0 -> SoundManager.playSoundEffect(SoundEffect.DINK3);
+            case 4 -> soundManager.playSoundEffect(SoundEffect.DINK1);
+            case 2 -> soundManager.playSoundEffect(SoundEffect.DINK2);
+            case 0 -> soundManager.playSoundEffect(SoundEffect.DINK3);
         }
 
         Component out = join(JoinConfiguration.noSeparators(), Component.text("█ ".repeat(counter / 2)), color, Component.text(" █".repeat(counter / 2))).decorate(TextDecoration.BOLD).color(color.color());
-        for (Player player : world.getPlayers()) {
+        for (Player player : gameWorld.getPlayers()) {
             player.sendActionBar(out);
         }
 
@@ -146,37 +133,6 @@ public class UiManager {
 
     public void updateScoreboardRoundParticipants(int playersLeft) {
         updateLine(8, Component.text(playersLeft).append(Component.text(" Dancers").color(XBlock.LIGHT_GRAY.getDisplayText().color())));
-    }
-
-    public static void launchRandomFirework() {
-        Location location = PlayerManager.startingLocations.get(random.nextInt(PlayerManager.startingLocations.size()));
-        World world = location.getWorld();
-        if (world == null) return;
-
-        Firework firework = world.spawn(location, Firework.class);
-        FireworkMeta meta = firework.getFireworkMeta();
-
-        // Random firework effect
-        FireworkEffect effect = FireworkEffect.builder()
-                .flicker(random.nextBoolean())
-                .withColor(getRandomColor(), getRandomColor())
-                .withFade(getRandomColor())
-                .with(getRandomType())
-                .trail(random.nextBoolean())
-                .build();
-
-        meta.addEffect(effect);
-        meta.setPower(random.nextInt(2) + 1);
-        firework.setFireworkMeta(meta);
-    }
-
-    private static Color getRandomColor() {
-        return Color.fromRGB(random.nextInt(256), random.nextInt(256), random.nextInt(256));
-    }
-
-    private static FireworkEffect.Type getRandomType() {
-        FireworkEffect.Type[] types = FireworkEffect.Type.values();
-        return types[random.nextInt(types.length)];
     }
 
     private void updateLine(int line, Component text) {

@@ -8,7 +8,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.pine.blockparty.Blockparty;
 import org.pine.blockparty.exceptions.BlockpartyException;
-import org.pine.blockparty.exceptions.WorldNullException;
 import org.pine.blockparty.model.Difficulty;
 import org.pine.blockparty.model.GameState;
 import org.pine.blockparty.model.Round;
@@ -19,9 +18,6 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.pine.blockparty.managers.PlatformManager.platformRemoveXBlock;
-import static org.pine.blockparty.managers.PlatformManager.platformToPattern;
-import static org.pine.blockparty.managers.PlayerManager.*;
 import static org.pine.blockparty.managers.UiManager.*;
 import static org.pine.blockparty.model.Difficulty.*;
 
@@ -34,27 +30,30 @@ public class GameManager {
 
     private static final Logger logger = LoggerFactory.getLogger(GameManager.class);
 
-    private final World world;
+    private final World gameWorld;
     private final Blockparty plugin;
     private final ArenaManager arenaManager;
     private final UiManager uiManager;
+    private final PlatformManager platformManager;
+    private final PlayerManager playerManager;
+    private final SoundManager soundManager;
 
     private GameState currentState = GameState.IDLE;
     private BukkitTask currentGameTask;
     private Round currentRound;
     private boolean isSinglePlayerMode = false;
 
-    public GameManager(Blockparty plugin, ArenaManager arenaManager, UiManager uiManager) {
+    public GameManager(World gameWorld, ArenaManager arenaManager, UiManager uiManager, PlatformManager platformManager,
+                       PlayerManager playerManager, SoundManager soundManager, Blockparty plugin) {
         this.plugin = plugin;
         this.arenaManager = arenaManager;
         this.uiManager = uiManager;
-        this.world = Bukkit.getWorld("world"); // todo probably should be an enum in configuration
+        this.platformManager = platformManager;
+        this.playerManager = playerManager;
+        this.soundManager = soundManager;
+        this.gameWorld = gameWorld;
 
-        if (world == null) {
-            throw new WorldNullException();
-        }
-
-        platformToPattern(arenaManager.getStartingArena().pattern());
+        platformManager.platformToPattern(arenaManager.getStartingArena().pattern());
     }
 
     public Round getCurrentRound() {
@@ -67,8 +66,8 @@ public class GameManager {
         }
 
         currentRound = null;
-        isSinglePlayerMode = world.getPlayers().size() == 1;
-        removeAllItems();
+        isSinglePlayerMode = gameWorld.getPlayers().size() == 1;
+        playerManager.removeAllItems();
 
         currentState = GameState.FIRST_ROUND_START;
         processGameLoop();
@@ -79,11 +78,11 @@ public class GameManager {
             return;
         }
 
-        teleportAllPlayersToLobby();
-        platformToPattern(arenaManager.getStartingArena().pattern());
-        removeAllItems();
+        playerManager.teleportAllPlayersToLobby();
+        this.platformManager.platformToPattern(arenaManager.getStartingArena().pattern());
+        playerManager.removeAllItems();
         uiManager.updateBossBar(Component.text("§5§lBlockparty"));
-        SoundManager.stopMusic();
+        soundManager.stopMusic();
 
         if (currentGameTask != null) {
             currentGameTask.cancel();
@@ -99,16 +98,16 @@ public class GameManager {
     }
 
     public void playerEliminated(Player player) {
-        world.strikeLightningEffect(player.getLocation());
+        gameWorld.strikeLightningEffect(player.getLocation());
 
-        teleportPlayerToLobby(player);
+        playerManager.teleportPlayerToLobby(player);
         currentRound.getEliminations().add(player);
 
         player.sendMessage("You lose!");
         logger.info("Player {} has been eliminated", player.getName());
-        broadcastInChat(player.getName() + " have been eliminated");
+        uiManager.broadcastInChat(player.getName() + " have been eliminated");
         uiManager.updateScoreboardRoundParticipants(currentRound.getParticipants().size() - currentRound.getEliminations().size());
-        removeAllItems();
+        playerManager.removeAllItems();
     }
 
     private void scheduleNextStateAfterDelay(long delayTicks) {
@@ -136,42 +135,43 @@ public class GameManager {
     }
 
     private void processGameStateStartingFirstRound() {
-        platformToPattern(arenaManager.getStartingArena().pattern());
-        teleportAllPlayersToStartingPlatform();
+        platformManager.platformToPattern(arenaManager.getStartingArena().pattern());
+        playerManager.teleportAllPlayersToStartingPlatform();
 
-        currentRound = new Round(arenaManager.getStartingArena(), DIFFICULTY_1, world.getPlayers());
+        currentRound = new Round(arenaManager.getStartingArena(), DIFFICULTY_1, gameWorld.getPlayers());
         logger.info("Starting game with players: {}", currentRound.getParticipants().stream().map(Player::getName).collect(Collectors.joining(", ")));
-        uiManager.updateScoreboard(world.getPlayers().size(), currentRound.getDifficulty().getCounter(), currentRound.getDifficulty().getDurationInSecondsLabel(), 1, 1);
+        uiManager.updateScoreboard(gameWorld.getPlayers().size(), currentRound.getDifficulty().getCounter(), currentRound.getDifficulty().getDurationInSecondsLabel(), 1, 1);
         uiManager.updateBossBar(Component.text("Preparing").color(XBlock.WHITE.getDisplayText().color()));
-        startSplash();
-        SoundManager.playMusic();
+        uiManager.startSplash();
+        String songTitle = soundManager.playMusic();
+        uiManager.broadcastInChat("§5§lLet's party! Now playing: " + songTitle);
 
         currentState = GameState.XBLOCK_DISPLAY;
         scheduleNextStateAfterDelay(STARTING_TIMER_TICKS);
     }
 
     private void processGameStateChangePlatform() {
-        platformToPattern(currentRound.getArena().pattern());
+        platformManager.platformToPattern(currentRound.getArena().pattern());
         logger.info("Changing level to: {}", currentRound.getArena().name());
         uiManager.updateBossBar(Component.text("Preparing").color(XBlock.WHITE.getDisplayText().color()));
-        removeAllItems();
+        playerManager.removeAllItems();
 
         currentState = GameState.XBLOCK_DISPLAY;
         scheduleNextStateAfterDelay(SHOW_XBLOCK_AFTER_TICKS);
     }
 
     private void processGameStateShowXBlock() {
-        colorCountdown(plugin, currentRound.getxBlock().getDisplayText(), (int) currentRound.getDifficulty().getDurationInTicks() / 10 - 1);
+        uiManager.colorCountdown(plugin, currentRound.getxBlock().getDisplayText(), (int) currentRound.getDifficulty().getDurationInTicks() / 10 - 1);
         uiManager.updateBossBar(currentRound.getxBlock().getDisplayText());
-        giveColorItemInHotbar(currentRound.getxBlock().getMaterial());
+        playerManager.giveColorItemInHotbar(currentRound.getxBlock().getMaterial());
 
         currentState = GameState.XBLOCK_REMOVAL;
         scheduleNextStateAfterDelay(currentRound.getDifficulty().getDurationInTicks());
     }
 
     private void processGameStateXBlockRemoval() {
-        broadcastActionBar(Component.text("§c§lX Stop X"));
-        platformRemoveXBlock(currentRound.getxBlock().getMaterial());
+        uiManager.broadcastActionBar(Component.text("§c§lX Stop X"));
+        platformManager.platformRemoveXBlock(currentRound.getxBlock().getMaterial());
 
         currentState = GameState.ROUND_EVALUATION;
         scheduleNextStateAfterDelay(SECONDS_3_TICKS);
@@ -197,20 +197,20 @@ public class GameManager {
 
     private void processGameStateWinConditionTie() {
         if (isSinglePlayerMode) {
-            broadcastTitle(Component.text("§c§lYou lose!"), Component.empty());
+            uiManager.broadcastTitle(Component.text("§c§lYou lose!"), Component.empty());
         } else {
-            broadcastTitle(Component.text("§c§lTie - you all lost!"), Component.empty());
+            uiManager.broadcastTitle(Component.text("§c§lTie - you all lost!"), Component.empty());
         }
-        platformToPattern(arenaManager.getStartingArena().pattern());
-        teleportPlayersToPlatform(currentRound.getEliminations());
+        platformManager.platformToPattern(arenaManager.getStartingArena().pattern());
+        playerManager.teleportPlayersToPlatform(currentRound.getEliminations());
 
         currentState = GameState.GAME_OVER;
         scheduleNextStateAfterDelay(0L); // todo constant
     }
 
     private void processGameStateWinConditionWinner() {
-        broadcastTitle(Component.text("§b§l" + currentRound.getParticipants().getFirst().getName() + " won!"), Component.empty());
-        platformToPattern(arenaManager.getStartingArena().pattern());
+        uiManager.broadcastTitle(Component.text("§b§l" + currentRound.getParticipants().getFirst().getName() + " won!"), Component.empty());
+        platformManager.platformToPattern(arenaManager.getStartingArena().pattern());
         launchFireworkShow();
 
         currentState = GameState.GAME_OVER;
@@ -219,13 +219,13 @@ public class GameManager {
 
     private void processGameStateWinConditionRoundEnd() {
         if (isSinglePlayerMode) {
-            broadcastTitle(Component.text("§a§lYou won!"), Component.empty());
+            uiManager.broadcastTitle(Component.text("§a§lYou won!"), Component.empty());
         } else {
-            broadcastTitle(Component.text("§b§l" +
+            uiManager.broadcastTitle(Component.text("§b§l" +
                             currentRound.getParticipants().stream().map(Player::getName).collect(Collectors.joining(", "))),
                     Component.text("§e§lare the winners!"));
         }
-        platformToPattern(arenaManager.getStartingArena().pattern());
+        platformManager.platformToPattern(arenaManager.getStartingArena().pattern());
         launchFireworkShow();
 
         currentState = GameState.GAME_OVER;
@@ -257,7 +257,7 @@ public class GameManager {
                     return;
                 }
 
-                UiManager.launchRandomFirework();
+                platformManager.launchRandomFirework();
                 count++;
             }
         }.runTaskTimer(plugin, 0L, 25L); // todo constant

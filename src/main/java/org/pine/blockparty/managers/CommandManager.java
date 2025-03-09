@@ -10,18 +10,21 @@ import org.pine.blockparty.model.Arena;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.pine.blockparty.configuration.Command.*;
-import static org.pine.blockparty.managers.PlatformManager.platformToPattern;
-import static org.pine.blockparty.managers.UiManager.sendMessageToPlayerInChat;
+import static org.pine.blockparty.configuration.Command.SET_ARENA;
+import static org.pine.blockparty.configuration.Command.mapFromBukkitCommand;
 
 public class CommandManager implements CommandExecutor, TabCompleter {
 
     private final GameManager gameManager;
     private final ArenaManager arenaManager;
+    private final PlatformManager platformManager;
+    private final UiManager uiManager;
 
-    public CommandManager(GameManager gameManager, ArenaManager arenaManager) {
+    public CommandManager(GameManager gameManager, ArenaManager arenaManager, PlatformManager platformManager, UiManager uiManager) {
         this.gameManager = gameManager;
         this.arenaManager = arenaManager;
+        this.platformManager = platformManager;
+        this.uiManager = uiManager;
     }
 
     @Override
@@ -60,7 +63,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
     }
 
     private boolean handleLevelInfoCommand(Player player) {
-        sendMessageToPlayerInChat(player, arenaManager.getArenaInfo());
+        uiManager.sendMessageToPlayerInChat(player, arenaManager.getArenaInfo());
         return true;
     }
 
@@ -72,11 +75,11 @@ public class CommandManager implements CommandExecutor, TabCompleter {
 
         final Arena arena = arenaManager.getArenaByName(args[0]);
         if (arena == null) {
-            sendMessageToPlayerInChat(player, "Level not loaded");
+            uiManager.sendMessageToPlayerInChat(player, "Level not loaded");
             return false;
         }
 
-        platformToPattern(arena.pattern());
+        platformManager.platformToPattern(arena.pattern());
         return true;
     }
 }

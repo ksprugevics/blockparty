@@ -24,8 +24,11 @@ public class Blockparty extends JavaPlugin {
     private ConfigurationManager configurationManager;
     private GameManager gameManager;
     private ArenaManager arenaManager;
+    private PlatformManager platformManager;
+    private PlayerManager playerManager;
     private CommandManager commandManager;
     private UiManager uiManager;
+    private SoundManager soundManager;
 
     @Override
     public void onEnable() {
@@ -34,7 +37,10 @@ public class Blockparty extends JavaPlugin {
         try {
             initializeConfigurationManager();
             initializeWorld();
-            initializeLevelManager();
+            initializeArenaManager();
+            initializePlatformManager();
+            initializePlayerManager();
+            initializeSoundManager();
             initializeUiManager();
             initializeGameManager();
             initializeCommandManager();
@@ -60,31 +66,43 @@ public class Blockparty extends JavaPlugin {
     }
 
     private void initializeWorld() {
-        World gameWorld = Bukkit.getWorld(configurationManager.getConfigurationValue(Configuration.WORLD_NAME));
+        final World gameWorld = Bukkit.getWorld(configurationManager.getConfigurationValue(Configuration.WORLD_NAME));
         if (gameWorld == null) {
             throw new WorldNullException();
         }
         this.gameWorld = gameWorld;
     }
 
-    private void initializeLevelManager() throws ArenaLoadException {
+    private void initializeArenaManager() throws ArenaLoadException {
         this.arenaManager = new ArenaManager(configurationManager.getConfigurationValue(Configuration.ARENA_FILE_PATH));
     }
 
+    private void initializePlatformManager() {
+        this.platformManager = new PlatformManager(gameWorld);
+    }
+
+    private void initializePlayerManager() {
+        this.playerManager = new PlayerManager(gameWorld);
+    }
+
+    private void initializeSoundManager() {
+        this.soundManager = new SoundManager(gameWorld);
+    }
+
     private void initializeGameManager() {
-        this.gameManager = new GameManager(this, arenaManager, uiManager);
+        this.gameManager = new GameManager(gameWorld, arenaManager, uiManager, platformManager, playerManager, soundManager, this);
     }
 
     private void initializeUiManager() {
-        this.uiManager = new UiManager();
+        this.uiManager = new UiManager(gameWorld, soundManager);
     }
 
     private void initializeCommandManager() {
-        this.commandManager = new CommandManager(gameManager, arenaManager);
+        this.commandManager = new CommandManager(gameManager, arenaManager, platformManager, uiManager);
     }
 
     private void registerEvents(PluginManager pluginManager) {
-        pluginManager.registerEvents(new PlayerEvent(gameManager, uiManager), this);
+        pluginManager.registerEvents(new PlayerEvent(gameManager, uiManager, playerManager), this);
     }
 
     private void registerCommands() {

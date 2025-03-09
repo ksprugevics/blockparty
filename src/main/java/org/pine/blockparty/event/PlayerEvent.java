@@ -9,10 +9,10 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.pine.blockparty.managers.GameManager;
+import org.pine.blockparty.managers.PlayerManager;
 import org.pine.blockparty.managers.UiManager;
 import org.pine.blockparty.model.Round;
 
-import static org.pine.blockparty.managers.PlayerManager.teleportPlayerToLobby;
 
 public class PlayerEvent implements Listener {
 
@@ -20,10 +20,12 @@ public class PlayerEvent implements Listener {
 
     private final GameManager gameManager;
     private final UiManager uiManager;
+    private final PlayerManager playerManager;
 
-    public PlayerEvent(GameManager gameManager, UiManager uiManager) {
+    public PlayerEvent(GameManager gameManager, UiManager uiManager, PlayerManager playerManager) {
         this.gameManager = gameManager;
         this.uiManager = uiManager;
+        this.playerManager = playerManager;
     }
 
     @EventHandler
@@ -31,7 +33,7 @@ public class PlayerEvent implements Listener {
         // todo simplify
         final Player player = event.getPlayer();
         player.setGameMode(GameMode.ADVENTURE);
-        teleportPlayerToLobby(player);
+        playerManager.teleportPlayerToLobby(player);
         uiManager.showScoreboardToPlayer(player);
         final Round currentRound = gameManager.getCurrentRound();
         if (currentRound != null) {
