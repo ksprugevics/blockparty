@@ -1,5 +1,6 @@
 package org.pine.blockparty.managers;
 
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -19,6 +20,11 @@ public class PlayerManager {
 
     public PlayerManager(World gameWorld) {
         this.gameWorld = gameWorld;
+    }
+
+    public void initializePlayerOnJoin(Player player) {
+        player.setGameMode(GameMode.ADVENTURE);
+        teleportPlayerToLobby(player);
     }
 
     public void teleportPlayerToLobby(Player player) {

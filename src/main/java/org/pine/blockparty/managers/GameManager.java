@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.pine.blockparty.managers.UiManager.*;
 import static org.pine.blockparty.model.Difficulty.*;
 
 public class GameManager {
@@ -91,13 +90,13 @@ public class GameManager {
         currentState = GameState.IDLE;
     }
 
-    public void playerLeft(Player player) {
+    public void handlePlayerLeaving(Player player) {
         if (currentRound != null && currentRound.getParticipants().contains(player)) {
-            playerEliminated(player);
+            handlePlayerEliminated(player);
         }
     }
 
-    public void playerEliminated(Player player) {
+    public void handlePlayerEliminated(Player player) {
         gameWorld.strikeLightningEffect(player.getLocation());
 
         playerManager.teleportPlayerToLobby(player);

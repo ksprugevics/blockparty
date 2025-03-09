@@ -6,7 +6,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.pine.blockparty.configuration.Command;
 import org.pine.blockparty.configuration.Configuration;
-import org.pine.blockparty.event.PlayerEvent;
+import org.pine.blockparty.listeners.PlayerEventListener;
 import org.pine.blockparty.exceptions.ArenaLoadException;
 import org.pine.blockparty.exceptions.WorldNullException;
 import org.pine.blockparty.managers.*;
@@ -49,7 +49,7 @@ public class Blockparty extends JavaPlugin {
 
             logger.info("Blockparty plugin loaded");
         } catch (Exception e) {
-            logger.error("Failed to load blockparty", e);
+            logger.error("Failed to load Blockparty plugin", e);
         }
     }
 
@@ -102,7 +102,7 @@ public class Blockparty extends JavaPlugin {
     }
 
     private void registerEvents(PluginManager pluginManager) {
-        pluginManager.registerEvents(new PlayerEvent(gameManager, uiManager, playerManager), this);
+        pluginManager.registerEvents(new PlayerEventListener(gameManager, uiManager, playerManager), this);
     }
 
     private void registerCommands() {
