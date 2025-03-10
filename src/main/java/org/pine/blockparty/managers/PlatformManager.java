@@ -11,6 +11,11 @@ import java.util.Random;
 
 public class PlatformManager {
 
+    private static final short RGB_MAX = 256;
+
+    private static final short FIREWORK_POWER_MAX = 2;
+    private static final short FIREWORK_POWER_OFFSET = 1;
+
     private static final short X_MIN = 0;
     private static final short X_MAX = 31;
     private static final short Z_MIN = 0;
@@ -47,15 +52,10 @@ public class PlatformManager {
     }
 
     public void launchRandomFirework() {
-        Location location =  possibleFireworkLaunchLocations.get(random.nextInt(possibleFireworkLaunchLocations.size()));
-        World world = location.getWorld();
-        if (world == null) return;
-
-        Firework firework = world.spawn(location, Firework.class);
-        FireworkMeta meta = firework.getFireworkMeta();
-
-        // Random firework effect
-        FireworkEffect effect = FireworkEffect.builder()
+        final Location location =  possibleFireworkLaunchLocations.get(random.nextInt(possibleFireworkLaunchLocations.size()));
+        final Firework firework = gameWorld.spawn(location, Firework.class);
+        final FireworkMeta fireworkMeta = firework.getFireworkMeta();
+        final FireworkEffect effect = FireworkEffect.builder()
                 .flicker(random.nextBoolean())
                 .withColor(getRandomColor(), getRandomColor())
                 .withFade(getRandomColor())
@@ -63,17 +63,17 @@ public class PlatformManager {
                 .trail(random.nextBoolean())
                 .build();
 
-        meta.addEffect(effect);
-        meta.setPower(random.nextInt(2) + 1);
-        firework.setFireworkMeta(meta);
+        fireworkMeta.addEffect(effect);
+        fireworkMeta.setPower(random.nextInt(FIREWORK_POWER_MAX) + FIREWORK_POWER_OFFSET);
+        firework.setFireworkMeta(fireworkMeta);
     }
 
     private static Color getRandomColor() {
-        return Color.fromRGB(random.nextInt(256), random.nextInt(256), random.nextInt(256));
+        return Color.fromRGB(random.nextInt(RGB_MAX), random.nextInt(RGB_MAX), random.nextInt(RGB_MAX));
     }
 
     private static FireworkEffect.Type getRandomType() {
-        FireworkEffect.Type[] types = FireworkEffect.Type.values();
-        return types[random.nextInt(types.length)];
+        final var fireworkTypes = FireworkEffect.Type.values();
+        return fireworkTypes[random.nextInt(fireworkTypes.length)];
     }
 }
