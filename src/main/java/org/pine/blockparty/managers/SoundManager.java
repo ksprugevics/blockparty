@@ -14,15 +14,13 @@ public class SoundManager {
         this.gameWorld = gameWorld;
     }
 
-    public boolean playSoundEffect(SoundEffect sound) {
+    public void playSoundEffectForAllPlayers(SoundEffect soundEffect) {
         for (Player player : gameWorld.getPlayers()) {
-            player.playSound(sound.getSound(), player);
+            player.playSound(soundEffect.getSound(), player);
         }
-
-        return true;
     }
 
-    public String playMusic() {
+    public String playRandomSongForAllPlayers() {
         final Music currentSong = Music.getRandomSong();
         for (Player player : gameWorld.getPlayers()) {
             player.playSound(currentSong.getSound(), player);
@@ -31,7 +29,7 @@ public class SoundManager {
         return currentSong.getTitle();
     }
 
-    public void stopMusic() {
+    public void stopSoundsForAllPlayers() {
         for (Player player : gameWorld.getPlayers()) {
             player.stopSound(SoundCategory.RECORDS);
         }

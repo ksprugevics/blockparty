@@ -20,25 +20,24 @@ import static net.kyori.adventure.text.Component.join;
 
 public class UiManager {
 
-    private static final Component sidebarTitle = Component.text("§e§lBlockparty").decorate(TextDecoration.BOLD);
-    private static final Duration fadeIn = Duration.ofSeconds(1L); // TODO again, maybe need to move to duration
-    private static final Duration stay = Duration.ofSeconds(3L); // TODO again, maybe need to move to duration
-    private static final Duration fadeOut = Duration.ofSeconds(1L); // TODO again, maybe need to move to duration
+    private static final long COLOR_BAR_INTERVAL_TICKS = 10L;
+
+    private static final Duration titleFadeInDuration = Duration.ofSeconds(1L);
+    private static final Duration titlePresentDuration = Duration.ofSeconds(3L);
+    private static final Duration titleFadeOutDuration = Duration.ofSeconds(1L);
 
     private final SoundManager soundManager;
     private final World gameWorld;
     private final Scoreboard scoreboard;
     private final Objective objective;
-
-    private BossBar bossBar;
+    private final BossBar bossBar;
 
     public UiManager(World gameWorld, SoundManager soundManager) {
         this.gameWorld = gameWorld;
         this.soundManager = soundManager;
         this.scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
-        this.objective = scoreboard.registerNewObjective("sidebar", Criteria.create("bpstats"), sidebarTitle);
-        this.objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-        initializeDefaultBossbar();
+        this.objective = initializeScoreboardObjective();
+        this.bossBar = initializeDefaultBossbar();
     }
 
     public void initializeUiForPlayer(Player player, Round currentRound) {
@@ -52,27 +51,17 @@ public class UiManager {
         showBossBarToPlayer(player);
     }
 
-    public void initializeDefaultBossbar() {
-        this.bossBar = BossBar.bossBar(
-                Component.text("§5§lBlockparty"),
-                0f,
-                BossBar.Color.WHITE,
-                BossBar.Overlay.PROGRESS
-        );
-    }
-
     public void updateBossBar(Component text) {
         this.bossBar.name(text.decorate(TextDecoration.BOLD));
     }
 
-    public void startSplash() {
+    public void broadcastStartScreen() {
         broadcastTitle(Component.text("§e§lBlockparty"), Component.text("§lTime to DANCE!"));
     }
 
     public void broadcastTitle(Component title, Component subtitle) {
-
         for (Player player : gameWorld.getPlayers()) {
-            player.showTitle(Title.title(title, subtitle, Title.Times.times(fadeIn, stay, fadeOut)));
+            player.showTitle(Title.title(title, subtitle, Title.Times.times(titleFadeInDuration, titlePresentDuration, titleFadeOutDuration)));
         }
     }
 
@@ -81,78 +70,99 @@ public class UiManager {
     }
 
     public void broadcastInChat(String msg) {
-
         for (Player player : gameWorld.getPlayers()) {
             player.sendMessage(msg);
         }
     }
 
     public void broadcastActionBar(Component textComponent) {
-
         for (Player player : gameWorld.getPlayers()) {
             player.sendActionBar(textComponent.decorate(TextDecoration.BOLD));
         }
     }
 
-    public void colorCountdown(Plugin plugin, Component color, int counter) {
-
-        switch (counter) {
-            case 4 -> soundManager.playSoundEffect(SoundEffect.DINK1);
-            case 2 -> soundManager.playSoundEffect(SoundEffect.DINK2);
-            case 0 -> soundManager.playSoundEffect(SoundEffect.DINK3);
+    public void colorCountdown(int counter, Component xBlockColorLabel, Plugin plugin) {
+        if (counter < 0) {
+            return;
         }
 
-        Component out = join(JoinConfiguration.noSeparators(), Component.text("█ ".repeat(counter / 2)), color, Component.text(" █".repeat(counter / 2))).decorate(TextDecoration.BOLD).color(color.color());
+        switch (counter) {
+            case 4 -> soundManager.playSoundEffectForAllPlayers(SoundEffect.DINK1);
+            case 2 -> soundManager.playSoundEffectForAllPlayers(SoundEffect.DINK2);
+            case 0 -> soundManager.playSoundEffectForAllPlayers(SoundEffect.DINK3);
+        }
+
+        final Component actionBarText = join(JoinConfiguration.noSeparators(),
+                Component.text("█ ".repeat(counter / 2)), xBlockColorLabel,
+                Component.text(" █".repeat(counter / 2)))
+                .decorate(TextDecoration.BOLD).color(xBlockColorLabel.color());
+
         for (Player player : gameWorld.getPlayers()) {
-            player.sendActionBar(out);
+            player.sendActionBar(actionBarText);
         }
 
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            colorCountdown(plugin, color, counter - 1);
-        }, 10L);
+            colorCountdown(counter - 1, xBlockColorLabel, plugin);
+        }, COLOR_BAR_INTERVAL_TICKS);
     }
 
-    public void showScoreboardToPlayer(Player player) {
-        player.setScoreboard(scoreboard);
-        updateScoreboard(0, 1, "1s", 1, 1);
-    }
-
-    public void showBossBarToPlayer(Player player) {
-        player.showBossBar(bossBar);
-    }
-
-    public void updateScoreboard(int playersLeft, int round, String roundSpeed, int games, int wins) {
-        updateLine(9, Component.text("§d§lDancers left"));
-        updateLine(8, Component.text(playersLeft).append(Component.text(" Dancers").color(XBlock.LIGHT_GRAY.getDisplayText().color())));
-        updateLine(7, Component.empty());
-        updateLine(6, Component.text("§b§lGame info"));
-        updateLine(5, Component.text("Round: ").color(XBlock.LIGHT_GRAY.getDisplayText().color()).append(Component.text(round).color(XBlock.WHITE.getDisplayText().color()))
+    public void updateScoreboardEntire(int playersLeft, int round, String roundSpeed, int games, int wins) {
+        updateScoreboardLine(9, Component.text("§d§lDancers left"));
+        updateScoreboardLine(8, Component.text(playersLeft).append(Component.text(" Dancers").color(XBlock.LIGHT_GRAY.getDisplayText().color())));
+        updateScoreboardLine(7, Component.empty());
+        updateScoreboardLine(6, Component.text("§b§lGame info"));
+        updateScoreboardLine(5, Component.text("Round: ").color(XBlock.LIGHT_GRAY.getDisplayText().color()).append(Component.text(round).color(XBlock.WHITE.getDisplayText().color()))
                 .append(Component.text("/25").color(XBlock.GRAY.getDisplayText().color())));
-        updateLine(4, Component.text("Round speed: ").color(XBlock.LIGHT_GRAY.getDisplayText().color()).append(Component.text(roundSpeed).color(XBlock.WHITE.getDisplayText().color())));
-        updateLine(3, Component.empty());
-        updateLine(2, Component.text("§a§lYour stats"));
-        updateLine(1, Component.text("Games: ").color(XBlock.LIGHT_GRAY.getDisplayText().color()).append(Component.text(games).color(XBlock.WHITE.getDisplayText().color())));
-        updateLine(0, Component.text("Wins: ").color(XBlock.LIGHT_GRAY.getDisplayText().color()).append(Component.text(wins).color(XBlock.WHITE.getDisplayText().color())));
+        updateScoreboardLine(4, Component.text("Round speed: ").color(XBlock.LIGHT_GRAY.getDisplayText().color()).append(Component.text(roundSpeed).color(XBlock.WHITE.getDisplayText().color())));
+        updateScoreboardLine(3, Component.empty());
+        updateScoreboardLine(2, Component.text("§a§lYour stats"));
+        updateScoreboardLine(1, Component.text("Games: ").color(XBlock.LIGHT_GRAY.getDisplayText().color()).append(Component.text(games).color(XBlock.WHITE.getDisplayText().color())));
+        updateScoreboardLine(0, Component.text("Wins: ").color(XBlock.LIGHT_GRAY.getDisplayText().color()).append(Component.text(wins).color(XBlock.WHITE.getDisplayText().color())));
     }
 
     public void updateScoreboardRoundInfo(int playersLeft, int round, String roundSpeed) {
-        updateLine(8, Component.text(playersLeft).append(Component.text(" Dancers").color(XBlock.LIGHT_GRAY.getDisplayText().color())));
-        updateLine(5, Component.text("Round: ").color(XBlock.LIGHT_GRAY.getDisplayText().color()).append(Component.text(round).color(XBlock.WHITE.getDisplayText().color()))
+        updateScoreboardLine(8, Component.text(playersLeft).append(Component.text(" Dancers").color(XBlock.LIGHT_GRAY.getDisplayText().color())));
+        updateScoreboardLine(5, Component.text("Round: ").color(XBlock.LIGHT_GRAY.getDisplayText().color()).append(Component.text(round).color(XBlock.WHITE.getDisplayText().color()))
                 .append(Component.text("/25").color(XBlock.GRAY.getDisplayText().color())));
-        updateLine(4, Component.text("Round speed: ").color(XBlock.LIGHT_GRAY.getDisplayText().color()).append(Component.text(roundSpeed).color(XBlock.WHITE.getDisplayText().color())));
+        updateScoreboardLine(4, Component.text("Round speed: ").color(XBlock.LIGHT_GRAY.getDisplayText().color()).append(Component.text(roundSpeed).color(XBlock.WHITE.getDisplayText().color())));
     }
 
     public void updateScoreboardRoundParticipants(int playersLeft) {
-        updateLine(8, Component.text(playersLeft).append(Component.text(" Dancers").color(XBlock.LIGHT_GRAY.getDisplayText().color())));
+        updateScoreboardLine(8, Component.text(playersLeft).append(Component.text(" Dancers").color(XBlock.LIGHT_GRAY.getDisplayText().color())));
     }
 
-    private void updateLine(int line, Component text) {
-        Team team = scoreboard.getTeam("line" + line);
+    private Objective initializeScoreboardObjective() {
+        final Objective scoreboardObjective = this.scoreboard.registerNewObjective("sidebar", Criteria.create("bpstats"),
+                Component.text("§e§lBlockparty").decorate(TextDecoration.BOLD));
+        scoreboardObjective.setDisplaySlot(DisplaySlot.SIDEBAR);
+        return scoreboardObjective;
+    }
+
+    private BossBar initializeDefaultBossbar() {
+        return BossBar.bossBar(
+                Component.text("§5§lBlockparty"),
+                0f,
+                BossBar.Color.WHITE,
+                BossBar.Overlay.PROGRESS
+        );
+    }
+
+    private void showScoreboardToPlayer(Player player) {
+        player.setScoreboard(scoreboard);
+        updateScoreboardEntire(0, 1, "1s", 1, 1);
+    }
+
+    private void showBossBarToPlayer(Player player) {
+        player.showBossBar(bossBar);
+    }
+
+    private void updateScoreboardLine(int lineNumber, Component text) {
+        Team team = scoreboard.getTeam("line" + lineNumber);
         if (team == null) {
-            team = scoreboard.registerNewTeam("line" + line);
+            team = scoreboard.registerNewTeam("line" + lineNumber);
         }
-        team.addEntry("§" + line);
+        team.addEntry("§" + lineNumber);
         team.prefix(text);
-        objective.getScore("§" + line).setScore(line);
+        objective.getScore("§" + lineNumber).setScore(lineNumber);
     }
 }

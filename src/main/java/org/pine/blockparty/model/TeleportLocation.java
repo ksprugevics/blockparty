@@ -1,7 +1,6 @@
 package org.pine.blockparty.model;
 
 import org.bukkit.Location;
-import org.pine.blockparty.exceptions.BlockpartyException;
 
 import java.util.Arrays;
 import java.util.List;

@@ -14,6 +14,7 @@ import java.util.List;
 
 public class PlayerManager {
 
+    private static final byte XBLOCK_HOTBAR_SLOT = 4;
     private static final Logger logger = LoggerFactory.getLogger(PlayerManager.class);
 
     private final World gameWorld;
@@ -53,17 +54,16 @@ public class PlayerManager {
         }
     }
 
-    public void giveColorItemInHotbar(Material material) {
-        final ItemStack item = new ItemStack(material);
+    public void giveAllPlayersXblockInHotbar(Material xBlockMaterial) {
+        final ItemStack item = new ItemStack(xBlockMaterial);
 
         for (Player player : gameWorld.getPlayers()) {
-            player.getInventory().setItem(4, item);
+            player.getInventory().setItem(XBLOCK_HOTBAR_SLOT, item);
             player.updateInventory();
         }
     }
 
-    public void removeAllItems() {
-
+    public void clearAllPlayerInventories() {
         for (Player player : gameWorld.getPlayers()) {
             player.getInventory().clear();
         }

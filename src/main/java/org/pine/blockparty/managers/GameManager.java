@@ -66,7 +66,7 @@ public class GameManager {
 
         currentRound = null;
         isSinglePlayerMode = gameWorld.getPlayers().size() == 1;
-        playerManager.removeAllItems();
+        playerManager.clearAllPlayerInventories();
 
         currentState = GameState.FIRST_ROUND_START;
         processGameLoop();
@@ -79,9 +79,9 @@ public class GameManager {
 
         playerManager.teleportAllPlayersToLobby();
         this.platformManager.platformToPattern(arenaManager.getStartingArena().pattern());
-        playerManager.removeAllItems();
+        playerManager.clearAllPlayerInventories();
         uiManager.updateBossBar(Component.text("§5§lBlockparty"));
-        soundManager.stopMusic();
+        soundManager.stopSoundsForAllPlayers();
 
         if (currentGameTask != null) {
             currentGameTask.cancel();
@@ -106,7 +106,7 @@ public class GameManager {
         logger.info("Player {} has been eliminated", player.getName());
         uiManager.broadcastInChat(player.getName() + " have been eliminated");
         uiManager.updateScoreboardRoundParticipants(currentRound.getParticipants().size() - currentRound.getEliminations().size());
-        playerManager.removeAllItems();
+        playerManager.clearAllPlayerInventories();
     }
 
     private void scheduleNextStateAfterDelay(long delayTicks) {
@@ -139,10 +139,10 @@ public class GameManager {
 
         currentRound = new Round(arenaManager.getStartingArena(), DIFFICULTY_1, gameWorld.getPlayers());
         logger.info("Starting game with players: {}", currentRound.getParticipants().stream().map(Player::getName).collect(Collectors.joining(", ")));
-        uiManager.updateScoreboard(gameWorld.getPlayers().size(), currentRound.getDifficulty().getCounter(), currentRound.getDifficulty().getDurationInSecondsLabel(), 1, 1);
+        uiManager.updateScoreboardEntire(gameWorld.getPlayers().size(), currentRound.getDifficulty().getCounter(), currentRound.getDifficulty().getDurationInSecondsLabel(), 1, 1);
         uiManager.updateBossBar(Component.text("Preparing").color(XBlock.WHITE.getDisplayText().color()));
-        uiManager.startSplash();
-        String songTitle = soundManager.playMusic();
+        uiManager.broadcastStartScreen();
+        String songTitle = soundManager.playRandomSongForAllPlayers();
         uiManager.broadcastInChat("§5§lLet's party! Now playing: " + songTitle);
 
         currentState = GameState.XBLOCK_DISPLAY;
@@ -153,16 +153,16 @@ public class GameManager {
         platformManager.platformToPattern(currentRound.getArena().pattern());
         logger.info("Changing level to: {}", currentRound.getArena().name());
         uiManager.updateBossBar(Component.text("Preparing").color(XBlock.WHITE.getDisplayText().color()));
-        playerManager.removeAllItems();
+        playerManager.clearAllPlayerInventories();
 
         currentState = GameState.XBLOCK_DISPLAY;
         scheduleNextStateAfterDelay(SHOW_XBLOCK_AFTER_TICKS);
     }
 
     private void processGameStateShowXBlock() {
-        uiManager.colorCountdown(plugin, currentRound.getxBlock().getDisplayText(), (int) currentRound.getDifficulty().getDurationInTicks() / 10 - 1);
+        uiManager.colorCountdown((int) currentRound.getDifficulty().getDurationInTicks() / 10 - 1, currentRound.getxBlock().getDisplayText(), plugin);
         uiManager.updateBossBar(currentRound.getxBlock().getDisplayText());
-        playerManager.giveColorItemInHotbar(currentRound.getxBlock().getMaterial());
+        playerManager.giveAllPlayersXblockInHotbar(currentRound.getxBlock().getMaterial());
 
         currentState = GameState.XBLOCK_REMOVAL;
         scheduleNextStateAfterDelay(currentRound.getDifficulty().getDurationInTicks());
