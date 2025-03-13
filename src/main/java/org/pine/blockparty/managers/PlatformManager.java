@@ -4,6 +4,8 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Firework;
 import org.bukkit.inventory.meta.FireworkMeta;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.pine.blockparty.model.TeleportLocation;
 
 import java.util.List;
@@ -13,6 +15,8 @@ public class PlatformManager {
 
     private static final short RGB_MAX = 256;
 
+    private static final short FIREWORK_COUNT = 15;
+    private static final long FIREWORK_DELAY = 25L;
     private static final short FIREWORK_POWER_MAX = 2;
     private static final short FIREWORK_POWER_OFFSET = 1;
 
@@ -51,7 +55,21 @@ public class PlatformManager {
         }
     }
 
-    public void launchRandomFirework() {
+    public void startFireworkShow(Plugin plugin) {
+        Bukkit.getScheduler().runTaskTimer(plugin, new Runnable() {
+            private int count = 0;
+
+            @Override
+            public void run() {
+                if (count++ >= FIREWORK_COUNT) {
+                    return;
+                }
+                launchRandomFirework();
+            }
+        }, 0L, FIREWORK_DELAY);
+    }
+
+    private void launchRandomFirework() {
         final Location location =  possibleFireworkLaunchLocations.get(random.nextInt(possibleFireworkLaunchLocations.size()));
         final Firework firework = gameWorld.spawn(location, Firework.class);
         final FireworkMeta fireworkMeta = firework.getFireworkMeta();

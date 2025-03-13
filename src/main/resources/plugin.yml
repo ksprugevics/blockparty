@@ -1,10 +1,9 @@
 name: Blockparty
-version: 1.0.0
+version: 1.1
 main: org.pine.blockparty.Blockparty
 description: Blockparty minigame
-author: PaperMC
-website: https://papermc.io
-api-version: '1.21.3'
+author: Pine
+api-version: '1.21.4'
 
 commands:
   bpstart:
@@ -19,6 +18,9 @@ commands:
   bplvl:
     description: Changes the map to the specified level
     usage: /bplvl <levelName>
+  bpfw:
+    description: Starts the fireworks show
+    usage: /bpfw
 
 permissions:
   blockparty.admin:

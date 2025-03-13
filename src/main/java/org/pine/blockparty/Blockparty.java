@@ -98,7 +98,7 @@ public class Blockparty extends JavaPlugin {
     }
 
     private void initializeCommandManager() {
-        this.commandManager = new CommandManager(gameManager, arenaManager, platformManager, uiManager);
+        this.commandManager = new CommandManager(gameManager, arenaManager, platformManager, uiManager, this);
     }
 
     private void registerEvents(PluginManager pluginManager) {

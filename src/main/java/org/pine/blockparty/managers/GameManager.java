@@ -4,7 +4,6 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.pine.blockparty.Blockparty;
 import org.pine.blockparty.exceptions.BlockpartyException;
@@ -22,10 +21,12 @@ import static org.pine.blockparty.model.Difficulty.*;
 
 public class GameManager {
 
-    // todo if "Difficulty" enum was something more like "Duration", this might be moved there. consider
     private static final long STARTING_TIMER_TICKS = 140L;
     private static final long SHOW_XBLOCK_AFTER_TICKS = 70L;
+    private static final long GAME_END_DELAY_TICKS = 240L;
     private static final long SECONDS_3_TICKS = 60L;
+    private static final long SECONDS_1_TICKS = 20L;
+    private static final long SECONDS_0_TICKS = 0L;
 
     private static final Logger logger = LoggerFactory.getLogger(GameManager.class);
 
@@ -78,7 +79,7 @@ public class GameManager {
         }
 
         playerManager.teleportAllPlayersToLobby();
-        this.platformManager.platformToPattern(arenaManager.getStartingArena().pattern());
+        platformManager.platformToPattern(arenaManager.getStartingArena().pattern());
         playerManager.clearAllPlayerInventories();
         uiManager.updateBossBar(Component.text("§5§lBlockparty"));
         soundManager.stopSoundsForAllPlayers();
@@ -102,7 +103,7 @@ public class GameManager {
         playerManager.teleportPlayerToLobby(player);
         currentRound.getEliminations().add(player);
 
-        player.sendMessage("You lose!");
+        uiManager.sendMessageToPlayerInChat(player, "You lose!");
         logger.info("Player {} has been eliminated", player.getName());
         uiManager.broadcastInChat(player.getName() + " have been eliminated");
         uiManager.updateScoreboardRoundParticipants(currentRound.getParticipants().size() - currentRound.getEliminations().size());
@@ -110,8 +111,7 @@ public class GameManager {
     }
 
     private void scheduleNextStateAfterDelay(long delayTicks) {
-        logger.info("Running delay for {} ticks, {} seconds", delayTicks, delayTicks / 20);
-
+        logger.info("Running delay for {} ticks, {} seconds", delayTicks, delayTicks / SECONDS_1_TICKS);
         currentGameTask = Bukkit.getScheduler().runTaskLater(plugin, this::processGameLoop, delayTicks);
     }
 
@@ -142,7 +142,7 @@ public class GameManager {
         uiManager.updateScoreboardEntire(gameWorld.getPlayers().size(), currentRound.getDifficulty().getCounter(), currentRound.getDifficulty().getDurationInSecondsLabel(), 1, 1);
         uiManager.updateBossBar(Component.text("Preparing").color(XBlock.WHITE.getDisplayText().color()));
         uiManager.broadcastStartScreen();
-        String songTitle = soundManager.playRandomSongForAllPlayers();
+        final String songTitle = soundManager.playRandomSongForAllPlayers();
         uiManager.broadcastInChat("§5§lLet's party! Now playing: " + songTitle);
 
         currentState = GameState.XBLOCK_DISPLAY;
@@ -160,12 +160,16 @@ public class GameManager {
     }
 
     private void processGameStateShowXBlock() {
-        uiManager.colorCountdown((int) currentRound.getDifficulty().getDurationInTicks() / 10 - 1, currentRound.getxBlock().getDisplayText(), plugin);
+        uiManager.colorCountdown(calculateColorCountdownCounter(), currentRound.getxBlock().getDisplayText(), plugin);
         uiManager.updateBossBar(currentRound.getxBlock().getDisplayText());
         playerManager.giveAllPlayersXblockInHotbar(currentRound.getxBlock().getMaterial());
 
         currentState = GameState.XBLOCK_REMOVAL;
         scheduleNextStateAfterDelay(currentRound.getDifficulty().getDurationInTicks());
+    }
+
+    private int calculateColorCountdownCounter() {
+        return (int) currentRound.getDifficulty().getDurationInTicks() / 10 - 1;
     }
 
     private void processGameStateXBlockRemoval() {
@@ -191,7 +195,7 @@ public class GameManager {
             currentState = GameState.DIFFICULTY_UPDATE;
         }
 
-        scheduleNextStateAfterDelay(0L);
+        scheduleNextStateAfterDelay(SECONDS_0_TICKS);
     }
 
     private void processGameStateWinConditionTie() {
@@ -204,16 +208,16 @@ public class GameManager {
         playerManager.teleportPlayersToPlatform(currentRound.getEliminations());
 
         currentState = GameState.GAME_OVER;
-        scheduleNextStateAfterDelay(0L); // todo constant
+        scheduleNextStateAfterDelay(SECONDS_0_TICKS);
     }
 
     private void processGameStateWinConditionWinner() {
         uiManager.broadcastTitle(Component.text("§b§l" + currentRound.getParticipants().getFirst().getName() + " won!"), Component.empty());
         platformManager.platformToPattern(arenaManager.getStartingArena().pattern());
-        launchFireworkShow();
+        platformManager.startFireworkShow(plugin);
 
         currentState = GameState.GAME_OVER;
-        scheduleNextStateAfterDelay(240L); // todo constant
+        scheduleNextStateAfterDelay(GAME_END_DELAY_TICKS);
     }
 
     private void processGameStateWinConditionRoundEnd() {
@@ -225,15 +229,15 @@ public class GameManager {
                     Component.text("§e§lare the winners!"));
         }
         platformManager.platformToPattern(arenaManager.getStartingArena().pattern());
-        launchFireworkShow();
+        platformManager.startFireworkShow(plugin);
 
         currentState = GameState.GAME_OVER;
-        scheduleNextStateAfterDelay(240L); // todo constant
+        scheduleNextStateAfterDelay(GAME_END_DELAY_TICKS);
     }
 
     private void processGameStateUpdateDifficulty() {
         final List<Player> roundParticipants = currentRound.getParticipants();
-        Difficulty nextDifficulty = getNextDifficulty(currentRound.getDifficulty());
+        final Difficulty nextDifficulty = getNextDifficulty(currentRound.getDifficulty());
         currentRound = new Round(arenaManager.getRandomArena(), nextDifficulty, roundParticipants);
 
         logger.info("Increasing speed level to: {}", nextDifficulty.getDurationInSecondsLabel());
@@ -242,23 +246,6 @@ public class GameManager {
         uiManager.updateScoreboardRoundInfo(roundParticipants.size(), nextDifficulty.getCounter(), nextDifficulty.getDurationInSecondsLabel());
 
         currentState = GameState.PLATFORM_CHANGE;
-        scheduleNextStateAfterDelay(0L); // todo constant
-    }
-
-    private void launchFireworkShow() {
-        new BukkitRunnable() {
-            int count = 0;
-
-            @Override
-            public void run() {
-                if (count >= 15) {
-                    cancel();
-                    return;
-                }
-
-                platformManager.launchRandomFirework();
-                count++;
-            }
-        }.runTaskTimer(plugin, 0L, 25L); // todo constant
+        scheduleNextStateAfterDelay(SECONDS_0_TICKS);
     }
 }

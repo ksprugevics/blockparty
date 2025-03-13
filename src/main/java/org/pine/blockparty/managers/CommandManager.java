@@ -5,6 +5,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.pine.blockparty.model.Arena;
 
 import java.util.List;
@@ -19,12 +20,14 @@ public class CommandManager implements CommandExecutor, TabCompleter {
     private final ArenaManager arenaManager;
     private final PlatformManager platformManager;
     private final UiManager uiManager;
+    private final Plugin plugin;
 
-    public CommandManager(GameManager gameManager, ArenaManager arenaManager, PlatformManager platformManager, UiManager uiManager) {
+    public CommandManager(GameManager gameManager, ArenaManager arenaManager, PlatformManager platformManager, UiManager uiManager, Plugin plugin) {
         this.gameManager = gameManager;
         this.arenaManager = arenaManager;
         this.platformManager = platformManager;
         this.uiManager = uiManager;
+        this.plugin = plugin;
     }
 
     @Override
@@ -39,6 +42,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
             case STOP_GAME -> handleStopCommand();
             case ARENA_INFO -> handleLevelInfoCommand(player);
             case SET_ARENA -> handleLevelCommand(player, args);
+            case FIREWORK_SHOW -> handleFireworkShow();
         };
     }
 
@@ -80,6 +84,11 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         }
 
         platformManager.platformToPattern(arena.pattern());
+        return true;
+    }
+
+    private boolean handleFireworkShow() {
+        platformManager.startFireworkShow(plugin);
         return true;
     }
 }
