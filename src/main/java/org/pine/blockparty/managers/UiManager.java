@@ -10,6 +10,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scoreboard.*;
+import org.pine.blockparty.model.PlayerStats;
 import org.pine.blockparty.model.Round;
 import org.pine.blockparty.model.XBlock;
 import org.pine.blockparty.model.sound.SoundEffect;
@@ -40,14 +41,14 @@ public class UiManager {
         this.bossBar = initializeDefaultBossbar();
     }
 
-    public void initializeUiForPlayer(Player player, Round currentRound) {
+    public void initializeUiForPlayer(Player player, Round currentRound, PlayerStats playerStats) {
         if (currentRound != null) {
             updateScoreboardRoundInfo(currentRound.getParticipants().size(),
                     currentRound.getDifficulty().getCounter(),
                     currentRound.getDifficulty().getDurationInSecondsLabel());
         }
 
-        showScoreboardToPlayer(player);
+        showScoreboardToPlayer(player, playerStats);
         showBossBarToPlayer(player);
     }
 
@@ -147,9 +148,9 @@ public class UiManager {
         );
     }
 
-    private void showScoreboardToPlayer(Player player) {
+    private void showScoreboardToPlayer(Player player, PlayerStats playerStats) {
         player.setScoreboard(scoreboard);
-        updateScoreboardEntire(0, 1, "1s", 1, 1);
+        updateScoreboardEntire(0, 1, "1s", playerStats.totalGamesPlayed(), playerStats.wins());
     }
 
     private void showBossBarToPlayer(Player player) {

@@ -6,6 +6,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.pine.blockparty.configuration.Command;
 import org.pine.blockparty.configuration.Configuration;
+import org.pine.blockparty.exceptions.StatsLoadException;
 import org.pine.blockparty.listeners.PlayerEventListener;
 import org.pine.blockparty.exceptions.ArenaLoadException;
 import org.pine.blockparty.exceptions.WorldNullException;
@@ -24,6 +25,7 @@ public class Blockparty extends JavaPlugin {
     private ConfigurationManager configurationManager;
     private GameManager gameManager;
     private ArenaManager arenaManager;
+    private StatsManager statsManager;
     private PlatformManager platformManager;
     private PlayerManager playerManager;
     private CommandManager commandManager;
@@ -38,6 +40,7 @@ public class Blockparty extends JavaPlugin {
             initializeConfigurationManager();
             initializeWorld();
             initializeArenaManager();
+            initializeStatsManager();
             initializePlatformManager();
             initializePlayerManager();
             initializeSoundManager();
@@ -77,6 +80,10 @@ public class Blockparty extends JavaPlugin {
         this.arenaManager = new ArenaManager(configurationManager.getConfigurationValue(Configuration.ARENA_FILE_PATH));
     }
 
+    private void initializeStatsManager() throws StatsLoadException {
+        this.statsManager = new StatsManager(configurationManager.getConfigurationValue(Configuration.STATISTICS_FILE_PATH));
+    }
+
     private void initializePlatformManager() {
         this.platformManager = new PlatformManager(gameWorld);
     }
@@ -98,11 +105,11 @@ public class Blockparty extends JavaPlugin {
     }
 
     private void initializeCommandManager() {
-        this.commandManager = new CommandManager(gameManager, arenaManager, platformManager, uiManager, this);
+        this.commandManager = new CommandManager(gameManager, arenaManager, platformManager, uiManager, statsManager, this);
     }
 
     private void registerEvents(PluginManager pluginManager) {
-        pluginManager.registerEvents(new PlayerEventListener(gameManager, uiManager, playerManager), this);
+        pluginManager.registerEvents(new PlayerEventListener(gameManager, uiManager, playerManager, statsManager), this);
     }
 
     private void registerCommands() {

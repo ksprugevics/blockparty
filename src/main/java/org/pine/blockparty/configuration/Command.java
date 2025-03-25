@@ -8,7 +8,8 @@ public enum Command {
     STOP_GAME      ("bpstop"),
     ARENA_INFO     ("bplvlinfo"),
     SET_ARENA      ("bplvl"),
-    FIREWORK_SHOW  ("bpfw");
+    FIREWORK_SHOW  ("bpfw"),
+    STATS_SHOW     ("bpstats");
 
     private final String triggerKeyword;
 

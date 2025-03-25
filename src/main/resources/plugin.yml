@@ -21,6 +21,9 @@ commands:
   bpfw:
     description: Starts the fireworks show
     usage: /bpfw
+  bpstats:
+    description: Show your statistics
+    usage: /bpstats
 
 permissions:
   blockparty.admin:

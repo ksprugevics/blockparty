@@ -20,13 +20,16 @@ public class CommandManager implements CommandExecutor, TabCompleter {
     private final ArenaManager arenaManager;
     private final PlatformManager platformManager;
     private final UiManager uiManager;
+    private final StatsManager statsManager;
     private final Plugin plugin;
 
-    public CommandManager(GameManager gameManager, ArenaManager arenaManager, PlatformManager platformManager, UiManager uiManager, Plugin plugin) {
+    public CommandManager(GameManager gameManager, ArenaManager arenaManager, PlatformManager platformManager,
+                          UiManager uiManager, StatsManager statsManager, Plugin plugin) {
         this.gameManager = gameManager;
         this.arenaManager = arenaManager;
         this.platformManager = platformManager;
         this.uiManager = uiManager;
+        this.statsManager = statsManager;
         this.plugin = plugin;
     }
 
@@ -43,6 +46,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
             case ARENA_INFO -> handleLevelInfoCommand(player);
             case SET_ARENA -> handleLevelCommand(player, args);
             case FIREWORK_SHOW -> handleFireworkShow();
+            case STATS_SHOW -> handleStatsShow(player);
         };
     }
 
@@ -73,7 +77,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
 
     private boolean handleLevelCommand(Player player, String[] args) {
         if (args.length == 0) {
-            player.sendMessage("Please provide a level name");
+            uiManager.sendMessageToPlayerInChat(player, "Please provide a level name");
             return false;
         }
 
@@ -89,6 +93,11 @@ public class CommandManager implements CommandExecutor, TabCompleter {
 
     private boolean handleFireworkShow() {
         platformManager.startFireworkShow(plugin);
+        return true;
+    }
+
+    private boolean handleStatsShow(Player player) {
+        uiManager.sendMessageToPlayerInChat(player, statsManager.getPlayerStats(player).toString());
         return true;
     }
 }
