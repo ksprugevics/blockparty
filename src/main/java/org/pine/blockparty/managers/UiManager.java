@@ -9,7 +9,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.scoreboard.*;
+import org.bukkit.scoreboard.Criteria;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 import org.pine.blockparty.model.Round;
 import org.pine.blockparty.model.XBlock;
 import org.pine.blockparty.model.sound.SoundEffect;
@@ -106,7 +110,7 @@ public class UiManager {
         }, COLOR_BAR_INTERVAL_TICKS);
     }
 
-    public void updateScoreboardEntire(int playersLeft, int round, String roundSpeed, int games, int wins) {
+    public void updateScoreboardEntire(int playersLeft, int round, String roundSpeed) {
         updateScoreboardLine(9, Component.text("§d§lDancers left"));
         updateScoreboardLine(8, Component.text(playersLeft).append(Component.text(" Dancers").color(XBlock.LIGHT_GRAY.getDisplayText().color())));
         updateScoreboardLine(7, Component.empty());
@@ -115,9 +119,9 @@ public class UiManager {
                 .append(Component.text("/25").color(XBlock.GRAY.getDisplayText().color())));
         updateScoreboardLine(4, Component.text("Round speed: ").color(XBlock.LIGHT_GRAY.getDisplayText().color()).append(Component.text(roundSpeed).color(XBlock.WHITE.getDisplayText().color())));
         updateScoreboardLine(3, Component.empty());
-        updateScoreboardLine(2, Component.text("§a§lYour stats"));
-        updateScoreboardLine(1, Component.text("Games: ").color(XBlock.LIGHT_GRAY.getDisplayText().color()).append(Component.text(games).color(XBlock.WHITE.getDisplayText().color())));
-        updateScoreboardLine(0, Component.text("Wins: ").color(XBlock.LIGHT_GRAY.getDisplayText().color()).append(Component.text(wins).color(XBlock.WHITE.getDisplayText().color())));
+        updateScoreboardLine(2, Component.empty());
+        updateScoreboardLine(1, Component.empty());
+        updateScoreboardLine(0, Component.empty());
     }
 
     public void updateScoreboardRoundInfo(int playersLeft, int round, String roundSpeed) {
@@ -149,7 +153,7 @@ public class UiManager {
 
     private void showScoreboardToPlayer(Player player) {
         player.setScoreboard(scoreboard);
-        updateScoreboardEntire(0, 1, "1s", 1, 1);
+        updateScoreboardEntire(0, 1, "1s");
     }
 
     private void showBossBarToPlayer(Player player) {

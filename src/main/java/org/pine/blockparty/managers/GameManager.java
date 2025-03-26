@@ -17,7 +17,9 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.pine.blockparty.model.Difficulty.*;
+import static org.pine.blockparty.model.Difficulty.DIFFICULTY_0;
+import static org.pine.blockparty.model.Difficulty.DIFFICULTY_1;
+import static org.pine.blockparty.model.Difficulty.getNextDifficulty;
 
 public class GameManager {
 
@@ -37,6 +39,7 @@ public class GameManager {
     private final PlatformManager platformManager;
     private final PlayerManager playerManager;
     private final SoundManager soundManager;
+    private final StatsManager statsManager;
 
     private GameState currentState = GameState.IDLE;
     private BukkitTask currentGameTask;
@@ -44,13 +47,14 @@ public class GameManager {
     private boolean isSinglePlayerMode = false;
 
     public GameManager(World gameWorld, ArenaManager arenaManager, UiManager uiManager, PlatformManager platformManager,
-                       PlayerManager playerManager, SoundManager soundManager, Blockparty plugin) {
+                       PlayerManager playerManager, SoundManager soundManager, StatsManager statsManager, Blockparty plugin) {
         this.plugin = plugin;
         this.arenaManager = arenaManager;
         this.uiManager = uiManager;
         this.platformManager = platformManager;
         this.playerManager = playerManager;
         this.soundManager = soundManager;
+        this.statsManager = statsManager;
         this.gameWorld = gameWorld;
 
         platformManager.platformToPattern(arenaManager.getStartingArena().pattern());
@@ -83,6 +87,7 @@ public class GameManager {
         playerManager.clearAllPlayerInventories();
         uiManager.updateBossBar(Component.text("§5§lBlockparty"));
         soundManager.stopSoundsForAllPlayers();
+        statsManager.savePlayerStatsToConfiguredFile();
 
         if (currentGameTask != null) {
             currentGameTask.cancel();
@@ -139,7 +144,7 @@ public class GameManager {
 
         currentRound = new Round(arenaManager.getStartingArena(), DIFFICULTY_1, gameWorld.getPlayers());
         logger.info("Starting game with players: {}", currentRound.getParticipants().stream().map(Player::getName).collect(Collectors.joining(", ")));
-        uiManager.updateScoreboardEntire(gameWorld.getPlayers().size(), currentRound.getDifficulty().getCounter(), currentRound.getDifficulty().getDurationInSecondsLabel(), 1, 1);
+        uiManager.updateScoreboardEntire(gameWorld.getPlayers().size(), currentRound.getDifficulty().getCounter(), currentRound.getDifficulty().getDurationInSecondsLabel());
         uiManager.updateBossBar(Component.text("Preparing").color(XBlock.WHITE.getDisplayText().color()));
         uiManager.broadcastStartScreen();
         final String songTitle = soundManager.playRandomSongForAllPlayers();
@@ -182,9 +187,11 @@ public class GameManager {
 
     private void processGameStateRoundEvaluation() {
         final List<Player> roundEliminations = currentRound.getEliminations();
-        List<Player> roundParticipants = currentRound.getParticipants();
+        roundEliminations.forEach(statsManager::incrementPlayerLoses);
 
+        List<Player> roundParticipants = currentRound.getParticipants();
         roundParticipants.removeAll(roundEliminations);
+
         if (roundParticipants.isEmpty()) {
             currentState = GameState.WIN_CONDITION_TIE;
         } else if (getNextDifficulty(currentRound.getDifficulty()) == DIFFICULTY_0) {
@@ -204,6 +211,8 @@ public class GameManager {
         } else {
             uiManager.broadcastTitle(Component.text("§c§lTie - you all lost!"), Component.empty());
         }
+
+        currentRound.getParticipants().forEach(statsManager::incrementPlayerTies);
         platformManager.platformToPattern(arenaManager.getStartingArena().pattern());
         playerManager.teleportPlayersToPlatform(currentRound.getEliminations());
 
@@ -212,7 +221,10 @@ public class GameManager {
     }
 
     private void processGameStateWinConditionWinner() {
-        uiManager.broadcastTitle(Component.text("§b§l" + currentRound.getParticipants().getFirst().getName() + " won!"), Component.empty());
+        final List<Player> roundParticipants = currentRound.getParticipants();
+        roundParticipants.forEach(statsManager::incrementPlayerWins);
+
+        uiManager.broadcastTitle(Component.text("§b§l" + roundParticipants.getFirst().getName() + " won!"), Component.empty());
         platformManager.platformToPattern(arenaManager.getStartingArena().pattern());
         platformManager.startFireworkShow(plugin);
 
@@ -221,11 +233,13 @@ public class GameManager {
     }
 
     private void processGameStateWinConditionRoundEnd() {
+        final List<Player> roundParticipants = currentRound.getParticipants();
+        roundParticipants.forEach(statsManager::incrementPlayerWins);
+
         if (isSinglePlayerMode) {
             uiManager.broadcastTitle(Component.text("§a§lYou won!"), Component.empty());
         } else {
-            uiManager.broadcastTitle(Component.text("§b§l" +
-                            currentRound.getParticipants().stream().map(Player::getName).collect(Collectors.joining(", "))),
+            uiManager.broadcastTitle(Component.text("§b§l" + roundParticipants.stream().map(Player::getName).collect(Collectors.joining(", "))),
                     Component.text("§e§lare the winners!"));
         }
         platformManager.platformToPattern(arenaManager.getStartingArena().pattern());
@@ -237,6 +251,8 @@ public class GameManager {
 
     private void processGameStateUpdateDifficulty() {
         final List<Player> roundParticipants = currentRound.getParticipants();
+        roundParticipants.forEach(statsManager::incrementPlayerRoundsSurvived);
+
         final Difficulty nextDifficulty = getNextDifficulty(currentRound.getDifficulty());
         currentRound = new Round(arenaManager.getRandomArena(), nextDifficulty, roundParticipants);
 

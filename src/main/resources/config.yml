@@ -1,2 +1,3 @@
 arena-file-path: "plugins/blockparty/levels.json"
+stats-file-path: "plugins/blockparty/stats.json"
 world-name: "world"
