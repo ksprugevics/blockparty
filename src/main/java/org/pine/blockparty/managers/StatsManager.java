@@ -37,8 +37,24 @@ public class StatsManager {
         return playerStats != null ? playerStats : addPlayerToStatsFile(uuid);
     }
 
-    public void updatePlayerStats(Player player, PlayerStats stats) {
-        playerStatsMap.put(player.getUniqueId().toString(), stats);
+    public void incrementPlayerWins(Player player) {
+        PlayerStats playerStats = getPlayerStats(player);
+        playerStats.incrementWins();
+    }
+
+    public void incrementPlayerLoses(Player player) {
+        PlayerStats playerStats = getPlayerStats(player);
+        playerStats.incrementLosses();
+    }
+
+    public void incrementPlayerTies(Player player) {
+        PlayerStats playerStats = getPlayerStats(player);
+        playerStats.incrementTies();
+    }
+
+    public void incrementPlayerRoundsSurvived(Player player) {
+        PlayerStats playerStats = getPlayerStats(player);
+        playerStats.incrementRoundsSurvived();
     }
 
     public void savePlayerStatsToConfiguredFile() {

@@ -9,9 +9,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.pine.blockparty.managers.GameManager;
 import org.pine.blockparty.managers.PlayerManager;
-import org.pine.blockparty.managers.StatsManager;
 import org.pine.blockparty.managers.UiManager;
-import org.pine.blockparty.model.PlayerStats;
 
 public class PlayerEventListener implements Listener {
 
@@ -20,22 +18,19 @@ public class PlayerEventListener implements Listener {
     private final GameManager gameManager;
     private final UiManager uiManager;
     private final PlayerManager playerManager;
-    private final StatsManager statsManager;
 
-    public PlayerEventListener(GameManager gameManager, UiManager uiManager, PlayerManager playerManager, StatsManager statsManager) {
+    public PlayerEventListener(GameManager gameManager, UiManager uiManager, PlayerManager playerManager) {
         this.gameManager = gameManager;
         this.uiManager = uiManager;
         this.playerManager = playerManager;
-        this.statsManager = statsManager;
     }
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         final Player player = event.getPlayer();
-        final PlayerStats playerStats = statsManager.getPlayerStats(player);
 
         playerManager.initializePlayerOnJoin(player);
-        uiManager.initializeUiForPlayer(player, gameManager.getCurrentRound(), playerStats);
+        uiManager.initializeUiForPlayer(player, gameManager.getCurrentRound());
     }
 
     @EventHandler

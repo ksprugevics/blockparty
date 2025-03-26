@@ -6,11 +6,19 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.pine.blockparty.configuration.Command;
 import org.pine.blockparty.configuration.Configuration;
-import org.pine.blockparty.exceptions.StatsLoadException;
-import org.pine.blockparty.listeners.PlayerEventListener;
 import org.pine.blockparty.exceptions.ArenaLoadException;
+import org.pine.blockparty.exceptions.StatsLoadException;
 import org.pine.blockparty.exceptions.WorldNullException;
-import org.pine.blockparty.managers.*;
+import org.pine.blockparty.listeners.PlayerEventListener;
+import org.pine.blockparty.managers.ArenaManager;
+import org.pine.blockparty.managers.CommandManager;
+import org.pine.blockparty.managers.ConfigurationManager;
+import org.pine.blockparty.managers.GameManager;
+import org.pine.blockparty.managers.PlatformManager;
+import org.pine.blockparty.managers.PlayerManager;
+import org.pine.blockparty.managers.SoundManager;
+import org.pine.blockparty.managers.StatsManager;
+import org.pine.blockparty.managers.UiManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,7 +105,8 @@ public class Blockparty extends JavaPlugin {
     }
 
     private void initializeGameManager() {
-        this.gameManager = new GameManager(gameWorld, arenaManager, uiManager, platformManager, playerManager, soundManager, this);
+        this.gameManager = new GameManager(gameWorld, arenaManager, uiManager, platformManager, playerManager,
+                soundManager, statsManager, this);
     }
 
     private void initializeUiManager() {
@@ -109,7 +118,7 @@ public class Blockparty extends JavaPlugin {
     }
 
     private void registerEvents(PluginManager pluginManager) {
-        pluginManager.registerEvents(new PlayerEventListener(gameManager, uiManager, playerManager, statsManager), this);
+        pluginManager.registerEvents(new PlayerEventListener(gameManager, uiManager, playerManager), this);
     }
 
     private void registerCommands() {
