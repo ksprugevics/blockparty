@@ -34,7 +34,7 @@ public class StatsManager {
         final String uuid = player.getUniqueId().toString();
         PlayerStats playerStats = playerStatsMap.get(uuid);
 
-        return playerStats != null ? playerStats : addPlayerToStatsFile(uuid);
+        return playerStats != null ? playerStats : addPlayerToStats(uuid);
     }
 
     public void incrementPlayerWins(Player player) {
@@ -100,7 +100,7 @@ public class StatsManager {
         }
     }
 
-    private PlayerStats addPlayerToStatsFile(String uuid) {
+    private PlayerStats addPlayerToStats(String uuid) {
         logger.info("Adding new player to stats:");
         final PlayerStats playerStats = new PlayerStats(0, 0, 0, 0);
         playerStatsMap.put(uuid, playerStats);
