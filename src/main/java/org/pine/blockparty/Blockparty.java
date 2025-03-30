@@ -118,7 +118,7 @@ public class Blockparty extends JavaPlugin {
     }
 
     private void registerEvents(PluginManager pluginManager) {
-        pluginManager.registerEvents(new PlayerEventListener(gameManager, uiManager, playerManager), this);
+        pluginManager.registerEvents(new PlayerEventListener(gameManager, uiManager, playerManager, platformManager), this);
     }
 
     private void registerCommands() {

@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import static org.pine.blockparty.model.Difficulty.DIFFICULTY_0;
@@ -29,8 +30,10 @@ public class GameManager {
     private static final long SECONDS_3_TICKS = 60L;
     private static final long SECONDS_1_TICKS = 20L;
     private static final long SECONDS_0_TICKS = 0L;
+    private static final int POWER_UP_SPAWNING_RATE_ROUNDS = 3;
 
     private static final Logger logger = LoggerFactory.getLogger(GameManager.class);
+    private static final Random random = new Random();
 
     private final World gameWorld;
     private final Blockparty plugin;
@@ -159,9 +162,17 @@ public class GameManager {
         logger.info("Changing level to: {}", currentRound.getArena().name());
         uiManager.updateBossBar(Component.text("Preparing").color(XBlock.WHITE.getDisplayText().color()));
         playerManager.clearAllPlayerInventories();
+        spawnPowerup();
 
         currentState = GameState.XBLOCK_DISPLAY;
         scheduleNextStateAfterDelay(SHOW_XBLOCK_AFTER_TICKS);
+    }
+
+    private void spawnPowerup() {
+        if (random.nextInt(POWER_UP_SPAWNING_RATE_ROUNDS) == 0) {
+            uiManager.broadcastActionBar(Component.text("§6§l✦ A power-up has spawned! ✦"));
+            platformManager.spawnPowerupBlock();
+        }
     }
 
     private void processGameStateShowXBlock() {
@@ -180,6 +191,7 @@ public class GameManager {
     private void processGameStateXBlockRemoval() {
         uiManager.broadcastActionBar(Component.text("§c§lX Stop X"));
         platformManager.platformRemoveXBlock(currentRound.getxBlock().getMaterial());
+        platformManager.resetActivePowerUp();
 
         currentState = GameState.ROUND_EVALUATION;
         scheduleNextStateAfterDelay(SECONDS_3_TICKS);
