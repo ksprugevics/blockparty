@@ -15,8 +15,6 @@ import org.pine.blockparty.managers.PlayerManager;
 import org.pine.blockparty.managers.UiManager;
 import org.pine.blockparty.model.powerups.PowerUp;
 
-import java.util.List;
-
 public class PlayerEventListener implements Listener {
 
     private static final int FALL_THRESHOLD_Y = -5; // TODO: Configuration?
@@ -25,8 +23,6 @@ public class PlayerEventListener implements Listener {
     private final UiManager uiManager;
     private final PlayerManager playerManager;
     private final PlatformManager platformManager;
-
-    private List<Player> affectedPlayers;
 
     public PlayerEventListener(GameManager gameManager, UiManager uiManager, PlayerManager playerManager, PlatformManager platformManager) {
         this.gameManager = gameManager;
