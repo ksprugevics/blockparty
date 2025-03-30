@@ -1,12 +1,17 @@
 package org.pine.blockparty.managers;
 
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Color;
+import org.bukkit.FireworkEffect;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Firework;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.pine.blockparty.model.TeleportLocation;
+import org.pine.blockparty.model.powerups.PowerUp;
 
 import java.util.List;
 import java.util.Random;
@@ -31,12 +36,20 @@ public class PlatformManager {
     private final World gameWorld;
     private final List<Location> possibleFireworkLaunchLocations;
 
+    private PowerUp activePowerup;
+
     public PlatformManager(World gameWorld) {
         this.gameWorld = gameWorld;
         this.possibleFireworkLaunchLocations = TeleportLocation.getStartingLocations().stream().map(TeleportLocation::getLocation).toList();
     }
 
     public void platformToPattern(Material[][] pattern) {
+        for (int i = X_MIN; i <= X_MAX; i++) {
+            for (int j = Z_MIN; j <= Z_MAX; j++) {
+                gameWorld.getBlockAt(i, Y_LVL + 1, j).setType(Material.AIR);
+            }
+        }
+
         for (int i = X_MIN; i <= X_MAX; i++) {
             for (int j = Z_MIN; j <= Z_MAX; j++) {
                 gameWorld.getBlockAt(i, Y_LVL, j).setType(pattern[Z_MAX - i][j]);
@@ -69,8 +82,25 @@ public class PlatformManager {
         }, 0L, FIREWORK_DELAY);
     }
 
+    public void spawnPowerupBlock() {
+        final Location powerUpLocation = new Location(gameWorld, random.nextInt(X_MAX + 1), Y_LVL + 1, random.nextInt(Z_MAX + 1));
+        final Block powerupBlock = gameWorld.getBlockAt(powerUpLocation);
+        this.activePowerup = new PowerUp(powerupBlock);
+    }
+
+    public PowerUp getActivePowerUp() {
+        return activePowerup;
+    }
+
+    public void resetActivePowerUp() {
+        if (activePowerup != null) {
+            activePowerup.remove();
+            activePowerup = null;
+        }
+    }
+
     private void launchRandomFirework() {
-        final Location location =  possibleFireworkLaunchLocations.get(random.nextInt(possibleFireworkLaunchLocations.size()));
+        final Location location = possibleFireworkLaunchLocations.get(random.nextInt(possibleFireworkLaunchLocations.size()));
         final Firework firework = gameWorld.spawn(location, Firework.class);
         final FireworkMeta fireworkMeta = firework.getFireworkMeta();
         final FireworkEffect effect = FireworkEffect.builder()

@@ -24,6 +24,9 @@ commands:
   bpstats:
     description: Show your statistics
     usage: /bpstats
+  bppower:
+    description: Spawn a power-up
+    usage: /bppower
 
 permissions:
   blockparty.admin:

@@ -47,6 +47,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
             case SET_ARENA -> handleLevelCommand(player, args);
             case FIREWORK_SHOW -> handleFireworkShow();
             case STATS_SHOW -> handleStatsShow(player);
+            case SPAWN_POWERUP -> handleSpawnPowerup();
         };
     }
 
@@ -98,6 +99,11 @@ public class CommandManager implements CommandExecutor, TabCompleter {
 
     private boolean handleStatsShow(Player player) {
         uiManager.sendMessageToPlayerInChat(player, statsManager.getPlayerStats(player).toString());
+        return true;
+    }
+
+    private boolean handleSpawnPowerup() {
+        platformManager.spawnPowerupBlock();
         return true;
     }
 }

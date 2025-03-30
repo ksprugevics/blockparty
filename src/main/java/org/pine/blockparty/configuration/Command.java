@@ -9,7 +9,8 @@ public enum Command {
     ARENA_INFO     ("bplvlinfo"),
     SET_ARENA      ("bplvl"),
     FIREWORK_SHOW  ("bpfw"),
-    STATS_SHOW     ("bpstats");
+    STATS_SHOW     ("bpstats"),
+    SPAWN_POWERUP  ("bppower");
 
     private final String triggerKeyword;
 
