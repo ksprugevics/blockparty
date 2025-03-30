@@ -20,13 +20,13 @@ public class SoundManager {
         }
     }
 
-    public String playRandomSongForAllPlayers() {
+    public Music playRandomSongForAllPlayers() {
         final Music currentSong = Music.getRandomSong();
         for (Player player : gameWorld.getPlayers()) {
             player.playSound(currentSong.getSound(), player);
         }
 
-        return currentSong.getTitle();
+        return currentSong;
     }
 
     public void stopSoundsForAllPlayers() {

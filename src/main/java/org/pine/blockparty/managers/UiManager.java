@@ -110,7 +110,7 @@ public class UiManager {
         }, COLOR_BAR_INTERVAL_TICKS);
     }
 
-    public void updateScoreboardEntire(int playersLeft, int round, String roundSpeed) {
+    public void updateScoreboardEntire(int playersLeft, int round, String roundSpeed, String songPlaying) {
         updateScoreboardLine(9, Component.text("§d§lDancers left"));
         updateScoreboardLine(8, Component.text(playersLeft).append(Component.text(" Dancers").color(XBlock.LIGHT_GRAY.getDisplayText().color())));
         updateScoreboardLine(7, Component.empty());
@@ -119,9 +119,9 @@ public class UiManager {
                 .append(Component.text("/25").color(XBlock.GRAY.getDisplayText().color())));
         updateScoreboardLine(4, Component.text("Round speed: ").color(XBlock.LIGHT_GRAY.getDisplayText().color()).append(Component.text(roundSpeed).color(XBlock.WHITE.getDisplayText().color())));
         updateScoreboardLine(3, Component.empty());
-        updateScoreboardLine(2, Component.empty());
-        updateScoreboardLine(1, Component.empty());
-        updateScoreboardLine(0, Component.empty());
+        updateScoreboardLine(2, Component.text("§a§lMusic"));
+        updateScoreboardLine(1, Component.text("Now dancing to:").color(XBlock.LIGHT_GRAY.getDisplayText().color()));
+        updateScoreboardLine(0, Component.text(songPlaying).color(XBlock.WHITE.getDisplayText().color()));
     }
 
     public void updateScoreboardRoundInfo(int playersLeft, int round, String roundSpeed) {
@@ -133,6 +133,12 @@ public class UiManager {
 
     public void updateScoreboardRoundParticipants(int playersLeft) {
         updateScoreboardLine(8, Component.text(playersLeft).append(Component.text(" Dancers").color(XBlock.LIGHT_GRAY.getDisplayText().color())));
+    }
+
+    public void updateSongPlaying(String songPlaying) {
+        updateScoreboardLine(2, Component.text("§a§lMusic"));
+        updateScoreboardLine(1, Component.text("Now dancing to:").color(XBlock.LIGHT_GRAY.getDisplayText().color()));
+        updateScoreboardLine(0, Component.text(songPlaying).color(XBlock.WHITE.getDisplayText().color()));
     }
 
     private Objective initializeScoreboardObjective() {
@@ -153,7 +159,7 @@ public class UiManager {
 
     private void showScoreboardToPlayer(Player player) {
         player.setScoreboard(scoreboard);
-        updateScoreboardEntire(0, 1, "1s");
+        updateScoreboardEntire(0, 1, "1s", "");
     }
 
     private void showBossBarToPlayer(Player player) {

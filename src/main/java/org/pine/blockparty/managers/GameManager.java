@@ -11,6 +11,7 @@ import org.pine.blockparty.model.Difficulty;
 import org.pine.blockparty.model.GameState;
 import org.pine.blockparty.model.Round;
 import org.pine.blockparty.model.XBlock;
+import org.pine.blockparty.model.sound.Music;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +47,9 @@ public class GameManager {
 
     private GameState currentState = GameState.IDLE;
     private BukkitTask currentGameTask;
+    private BukkitTask currentMusicTask;
     private Round currentRound;
+    private Music currentSong;
     private boolean isSinglePlayerMode = false;
 
     public GameManager(World gameWorld, ArenaManager arenaManager, UiManager uiManager, PlatformManager platformManager,
@@ -92,10 +95,7 @@ public class GameManager {
         soundManager.stopSoundsForAllPlayers();
         statsManager.savePlayerStatsToConfiguredFile();
 
-        if (currentGameTask != null) {
-            currentGameTask.cancel();
-            currentGameTask = null;
-        }
+        cancelScheduledTasks();
         currentState = GameState.IDLE;
     }
 
@@ -147,14 +147,25 @@ public class GameManager {
 
         currentRound = new Round(arenaManager.getStartingArena(), DIFFICULTY_1, gameWorld.getPlayers());
         logger.info("Starting game with players: {}", currentRound.getParticipants().stream().map(Player::getName).collect(Collectors.joining(", ")));
-        uiManager.updateScoreboardEntire(gameWorld.getPlayers().size(), currentRound.getDifficulty().getCounter(), currentRound.getDifficulty().getDurationInSecondsLabel());
+        playRandomSong();
+        uiManager.updateScoreboardEntire(gameWorld.getPlayers().size(), currentRound.getDifficulty().getCounter(), currentRound.getDifficulty().getDurationInSecondsLabel(), currentSong.getTitle());
         uiManager.updateBossBar(Component.text("Preparing").color(XBlock.WHITE.getDisplayText().color()));
         uiManager.broadcastStartScreen();
-        final String songTitle = soundManager.playRandomSongForAllPlayers();
-        uiManager.broadcastInChat("§5§lLet's party! Now playing: " + songTitle);
 
         currentState = GameState.XBLOCK_DISPLAY;
         scheduleNextStateAfterDelay(STARTING_TIMER_TICKS);
+    }
+
+    private void scheduleNextSong(long delayTicks) {
+        logger.info("Running music delay for {} ticks, {} seconds", delayTicks, delayTicks / SECONDS_1_TICKS);
+        currentMusicTask = Bukkit.getScheduler().runTaskLater(plugin, this::playRandomSong, delayTicks);
+    }
+
+    private void playRandomSong() {
+        currentSong = soundManager.playRandomSongForAllPlayers();
+        uiManager.broadcastInChat("§5§lNow playing: " + currentSong.getTitle());
+        uiManager.updateSongPlaying(currentSong.getTitle());
+        scheduleNextSong(currentSong.getLengthInTicks());
     }
 
     private void processGameStateChangePlatform() {
@@ -275,5 +286,17 @@ public class GameManager {
 
         currentState = GameState.PLATFORM_CHANGE;
         scheduleNextStateAfterDelay(SECONDS_0_TICKS);
+    }
+
+    private void cancelScheduledTasks() {
+        if (currentGameTask != null) {
+            currentGameTask.cancel();
+            currentGameTask = null;
+        }
+
+        if (currentMusicTask != null) {
+            currentMusicTask.cancel();
+            currentMusicTask = null;
+        }
     }
 }
