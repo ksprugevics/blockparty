@@ -31,7 +31,6 @@ public class PlatformManager {
     private static final short FIREWORK_POWER_MAX = 2;
     private static final short FIREWORK_POWER_OFFSET = 1;
 
-
     private static final Random random = new Random();
 
     private final World gameWorld;
@@ -98,6 +97,14 @@ public class PlatformManager {
             activePowerup.remove();
             activePowerup = null;
         }
+    }
+
+    public Location randomLocationOnPlatform(int y) {
+        return new Location(gameWorld, random.nextInt(X_MAX + 1), y, random.nextInt(Z_MAX + 1));
+    }
+
+    public static Location randomLocationOnPlatform(int y, World world) {
+        return new Location(world, random.nextInt(X_MAX + 1), y, random.nextInt(Z_MAX + 1));
     }
 
     private void launchRandomFirework() {

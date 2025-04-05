@@ -2,23 +2,20 @@ package org.pine.blockparty.model.specials;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import org.pine.blockparty.managers.PlatformManager;
 
 import java.util.List;
-import java.util.Random;
 
-import static org.pine.blockparty.managers.PlatformManager.X_MAX;
 import static org.pine.blockparty.managers.PlatformManager.Y_LVL;
-import static org.pine.blockparty.managers.PlatformManager.Z_MAX;
 
 public class RandomTeleportationSpecialRound implements SpecialRound {
 
     private static final int TELEPORTATION_INTERVAL_TICKS = 40;
     private static final int INITIAL_DELAY_TICKS = 20;
-    private static final Random random = new Random();
 
     @Override
     public Component getMessage() {
@@ -44,7 +41,8 @@ public class RandomTeleportationSpecialRound implements SpecialRound {
     private void createTeleportationTasks(World world, List<Player> playersLeft, Plugin plugin, long delay) {
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             for (Player player : playersLeft) {
-                player.teleport(new Location(world, random.nextInt(X_MAX + 1), Y_LVL + 3, random.nextInt(Z_MAX + 1)));
+                player.teleport(PlatformManager.randomLocationOnPlatform(Y_LVL + 3, world));
+                player.playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1.0f, 1.0f);
             }
         }, delay);
     }

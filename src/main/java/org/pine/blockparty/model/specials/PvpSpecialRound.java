@@ -1,6 +1,7 @@
 package org.pine.blockparty.model.specials;
 
 import net.kyori.adventure.text.Component;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -18,6 +19,7 @@ public class PvpSpecialRound implements SpecialRound {
 
     @Override
     public void start(World world, List<Player> playersLeft, long roundDurationInTicks, Plugin plugin) {
+        playSound(playersLeft);
         world.setPVP(true);
         for (Player player : playersLeft) {
             player.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 20 * 20, 3));
@@ -34,5 +36,9 @@ public class PvpSpecialRound implements SpecialRound {
             player.removePotionEffect(PotionEffectType.DARKNESS);
             player.removePotionEffect(PotionEffectType.NAUSEA);
         }
+    }
+
+    private void playSound(List<Player> players) {
+        players.stream().forEach(pl -> pl.playSound(pl.getLocation(), Sound.ENTITY_PLAYER_ATTACK_CRIT, 0.7f, 1.0f));
     }
 }
