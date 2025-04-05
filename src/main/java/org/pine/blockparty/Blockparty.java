@@ -10,6 +10,7 @@ import org.pine.blockparty.exceptions.ArenaLoadException;
 import org.pine.blockparty.exceptions.StatsLoadException;
 import org.pine.blockparty.exceptions.WorldNullException;
 import org.pine.blockparty.listeners.PlayerEventListener;
+import org.pine.blockparty.listeners.SpecialRoundEventListener;
 import org.pine.blockparty.managers.ArenaManager;
 import org.pine.blockparty.managers.CommandManager;
 import org.pine.blockparty.managers.ConfigurationManager;
@@ -119,6 +120,7 @@ public class Blockparty extends JavaPlugin {
 
     private void registerEvents(PluginManager pluginManager) {
         pluginManager.registerEvents(new PlayerEventListener(gameManager, uiManager, playerManager, platformManager), this);
+        pluginManager.registerEvents(new SpecialRoundEventListener(), this);
     }
 
     private void registerCommands() {

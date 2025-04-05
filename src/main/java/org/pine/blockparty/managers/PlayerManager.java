@@ -5,16 +5,23 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.pine.blockparty.model.TeleportLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Set;
 
 public class PlayerManager {
 
     private static final byte XBLOCK_HOTBAR_SLOT = 4;
+    private static final Set<Material> WHITELISTED_ITEMS = Set.of(
+            Material.ENDER_PEARL,
+            Material.FISHING_ROD,
+            Material.TOTEM_OF_UNDYING
+    );
     private static final Logger logger = LoggerFactory.getLogger(PlayerManager.class);
 
     private final World gameWorld;
@@ -69,7 +76,30 @@ public class PlayerManager {
         }
     }
 
-    private void teleportPlayer(TeleportLocation teleportLocation, Player player) {
+    public void clearAllPlayerInventoriesExceptWhitelisted() {
+        for (Player player : gameWorld.getPlayers()) {
+            final Inventory inventory = player.getInventory();
+            for (int i = 0; i < inventory.getSize(); i++) {
+                ItemStack item = inventory.getItem(i);
+                if (item != null && !WHITELISTED_ITEMS.contains(item.getType())) {
+                    inventory.setItem(i, null);
+                }
+            }
+        }
+    }
+
+    public void removeItemFromPlayerInventory(Player player, Material itemToDelete) {
+            final Inventory inventory = player.getInventory();
+            for (int i = 0; i < inventory.getSize(); i++) {
+                ItemStack item = inventory.getItem(i);
+                if (item != null && item.getType().equals(itemToDelete)) {
+                    inventory.setItem(i, null);
+                    return;
+                }
+            }
+    }
+
+    public void teleportPlayer(TeleportLocation teleportLocation, Player player) {
         Location location = teleportLocation.getLocation();
         location.setWorld(gameWorld);
         player.teleport(location);

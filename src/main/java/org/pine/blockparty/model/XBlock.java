@@ -6,6 +6,7 @@ import org.bukkit.Material;
 import org.pine.blockparty.exceptions.BlockpartyException;
 
 import java.util.Arrays;
+import java.util.Random;
 
 import static org.bukkit.Material.*;
 
@@ -28,6 +29,7 @@ public enum XBlock {
     RED         (RED_CONCRETE,        "Red",        0x993333),
     BLACK       (BLACK_CONCRETE,      "Black",      0x191919);
 
+    private static final Random random = new Random();
     private final Material material;
     private final Component displayText;
 
@@ -49,5 +51,9 @@ public enum XBlock {
                 .filter(block -> block.getMaterial() == material)
                 .findFirst()
                 .orElseThrow(() -> new BlockpartyException("No XBlock found for material: " + material));
+    }
+
+    public static XBlock randomBlock() {
+        return values()[random.nextInt(values().length)];
     }
 }

@@ -15,7 +15,9 @@ public class PowerUpEffectFactory {
             new RandomTeleportPowerUpEffect(),
             new SlowFallingPowerUpEffect(),
             new SlownessPowerUpEffect(),
-            new SpeedPowerUpEffect()
+            new SpeedPowerUpEffect(),
+            new FishingRodPowerUpEffect(),
+            new SecondChancePowerUpEffect()
     );
 
     private static final Random random = new Random();

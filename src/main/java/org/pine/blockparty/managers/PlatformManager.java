@@ -18,18 +18,18 @@ import java.util.Random;
 
 public class PlatformManager {
 
+    public static final short X_MIN = 0;
+    public static final short X_MAX = 31;
+    public static final short Z_MIN = 0;
+    public static final short Z_MAX = 31;
+    public static final short Y_LVL = 0;
+
     private static final short RGB_MAX = 256;
 
     private static final short FIREWORK_COUNT = 15;
     private static final long FIREWORK_DELAY = 25L;
     private static final short FIREWORK_POWER_MAX = 2;
     private static final short FIREWORK_POWER_OFFSET = 1;
-
-    private static final short X_MIN = 0;
-    private static final short X_MAX = 31;
-    private static final short Z_MIN = 0;
-    private static final short Z_MAX = 31;
-    private static final short Y_LVL = 0;
 
     private static final Random random = new Random();
 
@@ -83,7 +83,7 @@ public class PlatformManager {
     }
 
     public void spawnPowerupBlock() {
-        final Location powerUpLocation = new Location(gameWorld, random.nextInt(X_MAX + 1), Y_LVL + 1, random.nextInt(Z_MAX + 1));
+        final Location powerUpLocation = randomLocationOnPlatform(Y_LVL + 1);
         final Block powerupBlock = gameWorld.getBlockAt(powerUpLocation);
         this.activePowerup = new PowerUp(powerupBlock);
     }
@@ -97,6 +97,14 @@ public class PlatformManager {
             activePowerup.remove();
             activePowerup = null;
         }
+    }
+
+    public Location randomLocationOnPlatform(int y) {
+        return new Location(gameWorld, random.nextInt(X_MAX + 1), y, random.nextInt(Z_MAX + 1));
+    }
+
+    public static Location randomLocationOnPlatform(int y, World world) {
+        return new Location(world, random.nextInt(X_MAX + 1), y, random.nextInt(Z_MAX + 1));
     }
 
     private void launchRandomFirework() {
