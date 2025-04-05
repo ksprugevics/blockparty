@@ -12,6 +12,8 @@ import org.pine.blockparty.model.GameState;
 import org.pine.blockparty.model.Round;
 import org.pine.blockparty.model.XBlock;
 import org.pine.blockparty.model.sound.Music;
+import org.pine.blockparty.model.specials.SpecialRound;
+import org.pine.blockparty.model.specials.SpecialRoundFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +33,8 @@ public class GameManager {
     private static final long SECONDS_3_TICKS = 60L;
     private static final long SECONDS_1_TICKS = 20L;
     private static final long SECONDS_0_TICKS = 0L;
-    private static final int POWER_UP_SPAWNING_RATE_ROUNDS = 3;
+    private static final int POWER_UP_SPAWNING_RATE_ROUNDS = 999; // todo configuration?
+    private static final int SPECIAL_ROUND_OCCURANCE_EACH_ROUNDS = 1; // todo configuration?
 
     private static final Logger logger = LoggerFactory.getLogger(GameManager.class);
     private static final Random random = new Random();
@@ -51,6 +54,7 @@ public class GameManager {
     private Round currentRound;
     private Music currentSong;
     private boolean isSinglePlayerMode = false;
+    private SpecialRound specialRound;
 
     public GameManager(World gameWorld, ArenaManager arenaManager, UiManager uiManager, PlatformManager platformManager,
                        PlayerManager playerManager, SoundManager soundManager, StatsManager statsManager, Blockparty plugin) {
@@ -172,18 +176,35 @@ public class GameManager {
         platformManager.platformToPattern(currentRound.getArena().pattern());
         logger.info("Changing level to: {}", currentRound.getArena().name());
         uiManager.updateBossBar(Component.text("Preparing").color(XBlock.WHITE.getDisplayText().color()));
-        playerManager.clearAllPlayerInventories();
-        spawnPowerup();
+        playerManager.clearAllPlayerInventoriesExceptWhitelisted();
+        handlePowerUpSpawn();
+        handleSpecialRoundTrigger();
 
         currentState = GameState.XBLOCK_DISPLAY;
         scheduleNextStateAfterDelay(SHOW_XBLOCK_AFTER_TICKS);
     }
 
-    private void spawnPowerup() {
+    private void handlePowerUpSpawn() {
         if (random.nextInt(POWER_UP_SPAWNING_RATE_ROUNDS) == 0) {
-            uiManager.broadcastActionBar(Component.text("§6§l✦ A power-up has spawned! ✦"));
-            platformManager.spawnPowerupBlock();
+            spawnPowerup();
         }
+    }
+
+    private void spawnPowerup() {
+        uiManager.broadcastActionBar(Component.text("§6§l✦ A power-up has spawned! ✦"));
+        platformManager.spawnPowerupBlock();
+    }
+
+    private void handleSpecialRoundTrigger() {
+        if (random.nextInt(SPECIAL_ROUND_OCCURANCE_EACH_ROUNDS) == 0) {
+            startSpecialRound();
+        }
+    }
+
+    private void startSpecialRound() {
+        specialRound = SpecialRoundFactory.getRandomSpecialRound();
+        specialRound.start(gameWorld, currentRound.getParticipants(), currentRound.getDifficulty().getDurationInTicks(), plugin);
+        uiManager.broadcastActionBar(specialRound.getMessage());
     }
 
     private void processGameStateShowXBlock() {
@@ -213,6 +234,7 @@ public class GameManager {
         roundEliminations.forEach(statsManager::incrementPlayerLoses);
 
         List<Player> roundParticipants = currentRound.getParticipants();
+        stopSpecialRound();
         roundParticipants.removeAll(roundEliminations);
 
         if (roundParticipants.isEmpty()) {
@@ -226,6 +248,13 @@ public class GameManager {
         }
 
         scheduleNextStateAfterDelay(SECONDS_0_TICKS);
+    }
+
+    private void stopSpecialRound() {
+        if (specialRound != null) {
+            specialRound.stop(gameWorld, currentRound.getParticipants(), currentRound.getDifficulty().getDurationInTicks(), plugin);
+            specialRound = null;
+        }
     }
 
     private void processGameStateWinConditionTie() {

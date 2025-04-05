@@ -1,6 +1,7 @@
 package org.pine.blockparty.listeners;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -9,10 +10,15 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.pine.blockparty.managers.GameManager;
 import org.pine.blockparty.managers.PlatformManager;
 import org.pine.blockparty.managers.PlayerManager;
 import org.pine.blockparty.managers.UiManager;
+import org.pine.blockparty.model.TeleportLocation;
 import org.pine.blockparty.model.powerups.PowerUp;
 
 public class PlayerEventListener implements Listener {
@@ -49,6 +55,11 @@ public class PlayerEventListener implements Listener {
         final Player player = event.getPlayer();
 
         if (hasPlayerFallen(player.getLocation())) {
+            if (playerHasSecondChancePowerUp(player)) {
+                handlePlayerSecondChance(player);
+                return;
+            }
+
             gameManager.handlePlayerEliminated(player);
         }
     }
@@ -75,6 +86,28 @@ public class PlayerEventListener implements Listener {
     }
 
     private boolean hasPlayerFallen(Location playerLocation) {
+        if (playerLocation == null) {
+            return false;
+        }
+
         return playerLocation.getY() < FALL_THRESHOLD_Y;
+    }
+
+    private boolean playerHasSecondChancePowerUp(Player player) {
+        final PlayerInventory inventory = player.getInventory();
+
+        for (ItemStack itemStack : inventory.getContents()) {
+            if (itemStack != null && itemStack.getType() == Material.TOTEM_OF_UNDYING && itemStack.getAmount() >= 1) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void handlePlayerSecondChance(Player player) {
+        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, 20 * 7, 0));
+        playerManager.teleportPlayer(TeleportLocation.PLATFORM_CENTER_HIGH, player);
+        playerManager.removeItemFromPlayerInventory(player, Material.TOTEM_OF_UNDYING);
     }
 }

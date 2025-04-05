@@ -18,6 +18,12 @@ import java.util.Random;
 
 public class PlatformManager {
 
+    public static final short X_MIN = 0;
+    public static final short X_MAX = 31;
+    public static final short Z_MIN = 0;
+    public static final short Z_MAX = 31;
+    public static final short Y_LVL = 0;
+
     private static final short RGB_MAX = 256;
 
     private static final short FIREWORK_COUNT = 15;
@@ -25,11 +31,6 @@ public class PlatformManager {
     private static final short FIREWORK_POWER_MAX = 2;
     private static final short FIREWORK_POWER_OFFSET = 1;
 
-    private static final short X_MIN = 0;
-    private static final short X_MAX = 31;
-    private static final short Z_MIN = 0;
-    private static final short Z_MAX = 31;
-    private static final short Y_LVL = 0;
 
     private static final Random random = new Random();
 
