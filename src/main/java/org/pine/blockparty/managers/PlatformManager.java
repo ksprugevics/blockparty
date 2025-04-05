@@ -83,7 +83,7 @@ public class PlatformManager {
     }
 
     public void spawnPowerupBlock() {
-        final Location powerUpLocation = new Location(gameWorld, random.nextInt(X_MAX + 1), Y_LVL + 1, random.nextInt(Z_MAX + 1));
+        final Location powerUpLocation = randomLocationOnPlatform(Y_LVL + 1);
         final Block powerupBlock = gameWorld.getBlockAt(powerUpLocation);
         this.activePowerup = new PowerUp(powerupBlock);
     }

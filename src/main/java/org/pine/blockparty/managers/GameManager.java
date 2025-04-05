@@ -33,8 +33,8 @@ public class GameManager {
     private static final long SECONDS_3_TICKS = 60L;
     private static final long SECONDS_1_TICKS = 20L;
     private static final long SECONDS_0_TICKS = 0L;
-    private static final int POWER_UP_SPAWNING_RATE_ROUNDS = 999; // todo configuration?
-    private static final int SPECIAL_ROUND_OCCURANCE_EACH_ROUNDS = 1; // todo configuration?
+    private static final int POWER_UP_SPAWNING_RATE_ROUNDS = 3;
+    private static final int SPECIAL_ROUND_OCCURRENCE_EACH_ROUNDS = 2;
 
     private static final Logger logger = LoggerFactory.getLogger(GameManager.class);
     private static final Random random = new Random();
@@ -196,7 +196,7 @@ public class GameManager {
     }
 
     private void handleSpecialRoundTrigger() {
-        if (random.nextInt(SPECIAL_ROUND_OCCURANCE_EACH_ROUNDS) == 0) {
+        if (random.nextInt(SPECIAL_ROUND_OCCURRENCE_EACH_ROUNDS) == 0) {
             startSpecialRound();
         }
     }

@@ -23,7 +23,7 @@ import org.pine.blockparty.model.powerups.PowerUp;
 
 public class PlayerEventListener implements Listener {
 
-    private static final int FALL_THRESHOLD_Y = -5; // TODO: Configuration?
+    private static final int FALL_THRESHOLD_Y = -5;
 
     private final GameManager gameManager;
     private final UiManager uiManager;
