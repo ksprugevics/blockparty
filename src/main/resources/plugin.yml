@@ -12,6 +12,9 @@ commands:
   bpstats:
     description: Show your statistics
     usage: /bpstats
+  bpspec:
+    description: Spectate instead of playing
+    usage: /bpspec
   bpstart:
     description: Start the game
     usage: /bpstart

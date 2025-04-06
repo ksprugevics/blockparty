@@ -57,8 +57,8 @@ public class Blockparty extends JavaPlugin {
             initializeSoundManager();
             initializeUiManager();
             initializeGameManager();
-            initializeCommandManager();
             initializeLobbyManager();
+            initializeCommandManager();
             registerEvents(pluginManager);
             registerCommands();
 
@@ -118,7 +118,7 @@ public class Blockparty extends JavaPlugin {
     }
 
     private void initializeCommandManager() {
-        this.commandManager = new CommandManager(gameManager, arenaManager, platformManager, uiManager, statsManager, this);
+        this.commandManager = new CommandManager(gameManager, arenaManager, platformManager, uiManager, statsManager, lobbyManager, this);
     }
 
     private void initializeLobbyManager() {
@@ -126,7 +126,7 @@ public class Blockparty extends JavaPlugin {
     }
 
     private void registerEvents(PluginManager pluginManager) {
-        pluginManager.registerEvents(new PlayerEventListener(gameManager, uiManager, playerManager, platformManager), this);
+        pluginManager.registerEvents(new PlayerEventListener(gameManager, uiManager, playerManager, platformManager, lobbyManager), this);
         pluginManager.registerEvents(new SpecialRoundEventListener(), this);
     }
 

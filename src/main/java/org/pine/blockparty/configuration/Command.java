@@ -4,14 +4,15 @@ import java.util.Arrays;
 
 public enum Command {
 
-    START_GAME     ("bpstart"),
-    STOP_GAME      ("bpstop"),
-    ARENA_INFO     ("bplvlinfo"),
-    SET_ARENA      ("bplvl"),
-    FIREWORK_SHOW  ("bpfw"),
-    STATS_SHOW     ("bpstats"),
-    SPAWN_POWERUP  ("bppower"),
-    HELP           ("bphelp");
+    START_GAME      ("bpstart"),
+    STOP_GAME       ("bpstop"),
+    ARENA_INFO      ("bplvlinfo"),
+    SET_ARENA       ("bplvl"),
+    FIREWORK_SHOW   ("bpfw"),
+    STATS_SHOW      ("bpstats"),
+    SPAWN_POWERUP   ("bppower"),
+    HELP            ("bphelp"),
+    SPECTATE_TOGGLE ("bpspec");
 
     private final String triggerKeyword;
 

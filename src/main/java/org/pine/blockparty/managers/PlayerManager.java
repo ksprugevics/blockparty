@@ -40,8 +40,7 @@ public class PlayerManager {
         logger.info("Teleported {} to lobby", player.getName());
     }
 
-    public void teleportAllPlayersToStartingPlatform() {
-        final List<Player> players = gameWorld.getPlayers();
+    public void teleportPlayersToStartingPlatform(List<Player> players) {
         final List<TeleportLocation> startingLocations = TeleportLocation.getStartingLocations();
 
         for (int i = 0; i < players.size(); i++) {

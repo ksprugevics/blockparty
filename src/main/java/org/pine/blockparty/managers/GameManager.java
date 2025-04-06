@@ -5,6 +5,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
+import org.checkerframework.checker.units.qual.A;
 import org.pine.blockparty.Blockparty;
 import org.pine.blockparty.exceptions.BlockpartyException;
 import org.pine.blockparty.model.Difficulty;
@@ -17,6 +18,7 @@ import org.pine.blockparty.model.specials.SpecialRoundFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -54,11 +56,11 @@ public class GameManager {
     private GameState currentState = GameState.IDLE;
     private BukkitTask currentGameTask;
     private BukkitTask currentMusicTask;
+    private List<Player> initialParticipants;
     private Round currentRound;
     private Music currentSong;
     private boolean isSinglePlayerMode = false;
     private SpecialRound specialRound;
-
 
     public GameManager(World gameWorld, ArenaManager arenaManager, UiManager uiManager, PlatformManager platformManager,
                        PlayerManager playerManager, SoundManager soundManager, StatsManager statsManager,
@@ -86,13 +88,14 @@ public class GameManager {
         return currentRound;
     }
 
-    public void startGame() {
-        if (currentState != GameState.IDLE) {
+    public void startGame(List<Player> participants) {
+        if (currentState != GameState.IDLE || participants.isEmpty()) {
             return;
         }
 
+        initialParticipants = new ArrayList<>(participants);
         currentRound = null;
-        isSinglePlayerMode = gameWorld.getPlayers().size() == 1;
+        isSinglePlayerMode = participants.size() == 1;
         playerManager.clearAllPlayerInventories();
 
         currentState = GameState.FIRST_ROUND_START;
@@ -159,12 +162,12 @@ public class GameManager {
 
     private void processGameStateStartingFirstRound() {
         platformManager.platformToPattern(arenaManager.getStartingArena().pattern());
-        playerManager.teleportAllPlayersToStartingPlatform();
+        playerManager.teleportPlayersToStartingPlatform(initialParticipants);
 
-        currentRound = new Round(arenaManager.getStartingArena(), DIFFICULTY_1, gameWorld.getPlayers());
-        logger.info("Starting game with players: {}", currentRound.getParticipants().stream().map(Player::getName).collect(Collectors.joining(", ")));
+        currentRound = new Round(arenaManager.getStartingArena(), DIFFICULTY_1, initialParticipants);
+        logger.info("Starting game with players: {}", initialParticipants.stream().map(Player::getName).collect(Collectors.joining(", ")));
         playRandomSong();
-        uiManager.updateScoreboardEntire(gameWorld.getPlayers().size(), currentRound.getDifficulty().getCounter(), currentRound.getDifficulty().getDurationInSecondsLabel(), currentSong.getTitle());
+        uiManager.updateScoreboardEntire(initialParticipants.size(), currentRound.getDifficulty().getCounter(), currentRound.getDifficulty().getDurationInSecondsLabel(), currentSong.getTitle());
         uiManager.updateBossBar(Component.text("Preparing").color(XBlock.WHITE.getDisplayText().color()));
         uiManager.broadcastStartScreen();
 
