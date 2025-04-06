@@ -35,7 +35,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player player) || !player.hasPermission("blockparty.admin")) {
+        if (!(sender instanceof Player player)) {
             sender.sendMessage("You do not have the permission to use this command");
             return false;
         }
@@ -112,9 +112,8 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         final String helpMessage = "---How to play:---\n" +
                 "Stand on the correct color block before the time runs out!\n" +
                 "Watch out for power-ups and special rounds!\n" +
-                "Be the last dancer standing to win!\n" +
+                "Be the last dancer standing to win!\n \n" +
                 "---Commands---\n" +
-                "/bpstart - Start the game\n" +
                 "/bpstats - See your statistics\n" +
                 "/bphelp  - See this information";
         uiManager.sendMessageToPlayerInChat(player, helpMessage);

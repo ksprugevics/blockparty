@@ -9,27 +9,33 @@ commands:
   bphelp:
     description: Instructions
     usage: /bphelp
-  bpstart:
-    description: Start the game
-    usage: /bpstart
-  bpstop:
-      description: Stop the game
-      usage: /bpstop
-  bplvlinfo:
-    description: Show level information
-    usage: /bplvlinfo
-  bplvl:
-    description: Changes the map to the specified level
-    usage: /bplvl <levelName>
-  bpfw:
-    description: Starts the fireworks show
-    usage: /bpfw
   bpstats:
     description: Show your statistics
     usage: /bpstats
+  bpstart:
+    description: Start the game
+    usage: /bpstart
+    permission: blockparty.admin
+  bpstop:
+    description: Stop the game
+    usage: /bpstop
+    permission: blockparty.admin
+  bplvlinfo:
+    description: Show level information
+    usage: /bplvlinfo
+    permission: blockparty.admin
+  bplvl:
+    description: Changes the map to the specified level
+    usage: /bplvl <levelName>
+    permission: blockparty.admin
+  bpfw:
+    description: Starts the fireworks show
+    usage: /bpfw
+    permission: blockparty.admin
   bppower:
     description: Spawn a power-up
     usage: /bppower
+    permission: blockparty.admin
 
 permissions:
   blockparty.admin:
