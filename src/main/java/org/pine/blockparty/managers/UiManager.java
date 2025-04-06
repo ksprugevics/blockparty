@@ -77,6 +77,11 @@ public class UiManager {
             player.sendMessage(msg);
         }
     }
+    public void broadcastInChat(Component textComponent) {
+        for (Player player : gameWorld.getPlayers()) {
+            player.sendMessage(textComponent);
+        }
+    }
 
     public void broadcastActionBar(Component textComponent) {
         for (Player player : gameWorld.getPlayers()) {

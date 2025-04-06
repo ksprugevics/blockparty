@@ -78,6 +78,10 @@ public class GameManager {
         platformManager.platformToPattern(arenaManager.getStartingArena().pattern());
     }
 
+    public boolean isGameOngoing() {
+        return currentState != GameState.IDLE;
+    }
+
     public Round getCurrentRound() {
         return currentRound;
     }
