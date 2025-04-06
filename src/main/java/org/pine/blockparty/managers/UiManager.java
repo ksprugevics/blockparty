@@ -46,9 +46,8 @@ public class UiManager {
 
     public void initializeUiForPlayer(Player player, Round currentRound) {
         if (currentRound != null) {
-            updateScoreboardRoundInfo(currentRound.getParticipants().size(),
-                    currentRound.getDifficulty().getCounter(),
-                    currentRound.getDifficulty().getDurationInSecondsLabel());
+            updateScoreboardRoundParticipants(currentRound.getParticipants().size());
+            updateScoreboardRoundInfo(currentRound.getDifficulty().getCounter(), currentRound.getDifficulty().getDurationInSecondsLabel());
         }
 
         showScoreboardToPlayer(player);
@@ -111,28 +110,23 @@ public class UiManager {
     }
 
     public void updateScoreboardEntire(int playersLeft, int round, String roundSpeed, String songPlaying) {
+        updateScoreboardRoundParticipants(playersLeft);
+        updateScoreboardRoundInfo(round, roundSpeed);
+        updateSongPlaying(songPlaying);
+    }
+
+    public void updateScoreboardRoundParticipants(int playersLeft) {
         updateScoreboardLine(9, Component.text("§d§lDancers left"));
         updateScoreboardLine(8, Component.text(playersLeft).append(Component.text(" Dancers").color(XBlock.LIGHT_GRAY.getDisplayText().color())));
+    }
+
+    public void updateScoreboardRoundInfo(int round, String roundSpeed) {
         updateScoreboardLine(7, Component.empty());
         updateScoreboardLine(6, Component.text("§b§lGame info"));
         updateScoreboardLine(5, Component.text("Round: ").color(XBlock.LIGHT_GRAY.getDisplayText().color()).append(Component.text(round).color(XBlock.WHITE.getDisplayText().color()))
                 .append(Component.text("/25").color(XBlock.GRAY.getDisplayText().color())));
         updateScoreboardLine(4, Component.text("Round speed: ").color(XBlock.LIGHT_GRAY.getDisplayText().color()).append(Component.text(roundSpeed).color(XBlock.WHITE.getDisplayText().color())));
         updateScoreboardLine(3, Component.empty());
-        updateScoreboardLine(2, Component.text("§a§lMusic"));
-        updateScoreboardLine(1, Component.text("Now dancing to:").color(XBlock.LIGHT_GRAY.getDisplayText().color()));
-        updateScoreboardLine(0, Component.text(songPlaying).color(XBlock.WHITE.getDisplayText().color()));
-    }
-
-    public void updateScoreboardRoundInfo(int playersLeft, int round, String roundSpeed) {
-        updateScoreboardLine(8, Component.text(playersLeft).append(Component.text(" Dancers").color(XBlock.LIGHT_GRAY.getDisplayText().color())));
-        updateScoreboardLine(5, Component.text("Round: ").color(XBlock.LIGHT_GRAY.getDisplayText().color()).append(Component.text(round).color(XBlock.WHITE.getDisplayText().color()))
-                .append(Component.text("/25").color(XBlock.GRAY.getDisplayText().color())));
-        updateScoreboardLine(4, Component.text("Round speed: ").color(XBlock.LIGHT_GRAY.getDisplayText().color()).append(Component.text(roundSpeed).color(XBlock.WHITE.getDisplayText().color())));
-    }
-
-    public void updateScoreboardRoundParticipants(int playersLeft) {
-        updateScoreboardLine(8, Component.text(playersLeft).append(Component.text(" Dancers").color(XBlock.LIGHT_GRAY.getDisplayText().color())));
     }
 
     public void updateSongPlaying(String songPlaying) {

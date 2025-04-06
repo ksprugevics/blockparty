@@ -319,7 +319,8 @@ public class GameManager {
         logger.info("Increasing speed level to: {}", nextDifficulty.getDurationInSecondsLabel());
         logger.info("Participants left: {}", roundParticipants.stream().map(Player::getName).collect(Collectors.joining(", ")));
 
-        uiManager.updateScoreboardRoundInfo(roundParticipants.size(), nextDifficulty.getCounter(), nextDifficulty.getDurationInSecondsLabel());
+        uiManager.updateScoreboardRoundParticipants(roundParticipants.size());
+        uiManager.updateScoreboardRoundInfo(nextDifficulty.getCounter(), nextDifficulty.getDurationInSecondsLabel());
 
         currentState = GameState.PLATFORM_CHANGE;
         scheduleNextStateAfterDelay(SECONDS_0_TICKS);

@@ -10,7 +10,7 @@ public enum TeleportLocation {
     LOBBY                (false, -11.5,  11.5,  16.5,    270f,   0f),
     PLATFORM_CENTER      (false, 16.5,   1,     16.5,    270f,   0f),
     PLATFORM_CENTER_MED  (false, 16.5,   2,     16.5,    270f,   0f),
-    PLATFORM_CENTER_HIGH (false, 16.5,   6,     16.5,    270f,   0f),
+    PLATFORM_CENTER_HIGH (false, 16.5,   12,     16.5,    270f,   0f),
     PLATFORM_1           (true,  3,      1,     4,       270f,   0f),
     PLATFORM_2           (true,  3,      1,     8,       270f,   0f),
     PLATFORM_3           (true,  3,      1,     12,      270f,   0f),

@@ -106,7 +106,7 @@ public class PlayerEventListener implements Listener {
     }
 
     private void handlePlayerSecondChance(Player player) {
-        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, 20 * 7, 0));
+        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, 20 * 7, 1));
         playerManager.teleportPlayer(TeleportLocation.PLATFORM_CENTER_HIGH, player);
         playerManager.removeItemFromPlayerInventory(player, Material.TOTEM_OF_UNDYING);
     }
