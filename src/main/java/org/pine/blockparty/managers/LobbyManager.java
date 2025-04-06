@@ -19,22 +19,11 @@ import java.util.List;
 public class LobbyManager {
 
     private static final int SECOND_30_INTERVAL = 30;
-    private static final int SECOND_15_INTERVAL = 15;
     private static final int SECOND_10_INTERVAL = 10;
-    private static final int SECOND_5_INTERVAL = 5;
-    private static final int SECOND_4_INTERVAL = 4;
-    private static final int SECOND_3_INTERVAL = 3;
-    private static final int SECOND_2_INTERVAL = 2;
-    private static final int SECOND_1_INTERVAL = 1;
 
     private static final long SECOND_INTERVAL_TICKS = 20L;
     private static final long SECOND_30_INTERVAL_TICKS = SECOND_INTERVAL_TICKS * SECOND_30_INTERVAL;
-    private static final long SECOND_15_INTERVAL_TICKS = SECOND_INTERVAL_TICKS * SECOND_15_INTERVAL;
     private static final long SECOND_10_INTERVAL_TICKS = SECOND_INTERVAL_TICKS * SECOND_10_INTERVAL;
-    private static final long SECOND_5_INTERVAL_TICKS = SECOND_INTERVAL_TICKS * SECOND_5_INTERVAL;
-    private static final long SECOND_4_INTERVAL_TICKS = SECOND_INTERVAL_TICKS * SECOND_4_INTERVAL;
-    private static final long SECOND_3_INTERVAL_TICKS = SECOND_INTERVAL_TICKS * SECOND_3_INTERVAL;
-    private static final long SECOND_2_INTERVAL_TICKS = SECOND_INTERVAL_TICKS * SECOND_2_INTERVAL;
 
     private static final Logger logger = LoggerFactory.getLogger(LobbyManager.class);
 
