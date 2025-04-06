@@ -15,6 +15,7 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.pine.blockparty.managers.GameManager;
+import org.pine.blockparty.managers.LobbyManager;
 import org.pine.blockparty.managers.PlatformManager;
 import org.pine.blockparty.managers.PlayerManager;
 import org.pine.blockparty.managers.UiManager;
@@ -29,26 +30,35 @@ public class PlayerEventListener implements Listener {
     private final UiManager uiManager;
     private final PlayerManager playerManager;
     private final PlatformManager platformManager;
+    private final LobbyManager lobbyManager;
 
-    public PlayerEventListener(GameManager gameManager, UiManager uiManager, PlayerManager playerManager, PlatformManager platformManager) {
+    public PlayerEventListener(GameManager gameManager, UiManager uiManager, PlayerManager playerManager,
+                               PlatformManager platformManager, LobbyManager lobbyManager) {
         this.gameManager = gameManager;
         this.uiManager = uiManager;
         this.playerManager = playerManager;
         this.platformManager = platformManager;
+        this.lobbyManager = lobbyManager;
     }
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         final Player player = event.getPlayer();
 
+        player.setLevel(0);
         playerManager.initializePlayerOnJoin(player);
+        lobbyManager.addPlayerToParticipants(player);
         uiManager.initializeUiForPlayer(player, gameManager.getCurrentRound());
         uiManager.sendMessageToPlayerInChat(player, "Welcome to Blockparty! Type /bphelp for more information.");
     }
 
     @EventHandler
     public void onPlayerLeave(PlayerQuitEvent event) {
-        gameManager.handlePlayerLeaving(event.getPlayer());
+        final Player player = event.getPlayer();
+
+        player.setLevel(0);
+        gameManager.handlePlayerLeaving(player);
+        lobbyManager.removePlayerFromParticipants(player);
     }
 
     @EventHandler

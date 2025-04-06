@@ -21,15 +21,17 @@ public class CommandManager implements CommandExecutor, TabCompleter {
     private final PlatformManager platformManager;
     private final UiManager uiManager;
     private final StatsManager statsManager;
+    private final LobbyManager lobbyManager;
     private final Plugin plugin;
 
     public CommandManager(GameManager gameManager, ArenaManager arenaManager, PlatformManager platformManager,
-                          UiManager uiManager, StatsManager statsManager, Plugin plugin) {
+                          UiManager uiManager, StatsManager statsManager, LobbyManager lobbyManager, Plugin plugin) {
         this.gameManager = gameManager;
         this.arenaManager = arenaManager;
         this.platformManager = platformManager;
         this.uiManager = uiManager;
         this.statsManager = statsManager;
+        this.lobbyManager = lobbyManager;
         this.plugin = plugin;
     }
 
@@ -49,6 +51,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
             case STATS_SHOW -> handleStatsShow(player);
             case SPAWN_POWERUP -> handleSpawnPowerup();
             case HELP -> handleHelp(player);
+            case SPECTATE_TOGGLE -> handleToggleSpectate(player);
         };
     }
 
@@ -63,7 +66,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
     }
 
     private boolean handleStartCommand() {
-        gameManager.startGame();
+        lobbyManager.startGame();
         return true;
     }
 
@@ -115,8 +118,14 @@ public class CommandManager implements CommandExecutor, TabCompleter {
                 "Be the last dancer standing to win!\n \n" +
                 "---Commands---\n" +
                 "/bpstats - See your statistics\n" +
+                "/bpspec  - Toggle spectator mode\n" +
                 "/bphelp  - See this information";
         uiManager.sendMessageToPlayerInChat(player, helpMessage);
+        return true;
+    }
+
+    private boolean handleToggleSpectate(Player player) {
+        lobbyManager.togglePlayerSpectate(player);
         return true;
     }
 }

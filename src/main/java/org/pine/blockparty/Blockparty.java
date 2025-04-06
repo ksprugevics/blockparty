@@ -15,6 +15,7 @@ import org.pine.blockparty.managers.ArenaManager;
 import org.pine.blockparty.managers.CommandManager;
 import org.pine.blockparty.managers.ConfigurationManager;
 import org.pine.blockparty.managers.GameManager;
+import org.pine.blockparty.managers.LobbyManager;
 import org.pine.blockparty.managers.PlatformManager;
 import org.pine.blockparty.managers.PlayerManager;
 import org.pine.blockparty.managers.SoundManager;
@@ -40,6 +41,7 @@ public class Blockparty extends JavaPlugin {
     private CommandManager commandManager;
     private UiManager uiManager;
     private SoundManager soundManager;
+    private LobbyManager lobbyManager;
 
     @Override
     public void onEnable() {
@@ -55,6 +57,7 @@ public class Blockparty extends JavaPlugin {
             initializeSoundManager();
             initializeUiManager();
             initializeGameManager();
+            initializeLobbyManager();
             initializeCommandManager();
             registerEvents(pluginManager);
             registerCommands();
@@ -115,11 +118,15 @@ public class Blockparty extends JavaPlugin {
     }
 
     private void initializeCommandManager() {
-        this.commandManager = new CommandManager(gameManager, arenaManager, platformManager, uiManager, statsManager, this);
+        this.commandManager = new CommandManager(gameManager, arenaManager, platformManager, uiManager, statsManager, lobbyManager, this);
+    }
+
+    private void initializeLobbyManager() {
+        this.lobbyManager = new LobbyManager(gameWorld, gameManager, uiManager, configurationManager, this);
     }
 
     private void registerEvents(PluginManager pluginManager) {
-        pluginManager.registerEvents(new PlayerEventListener(gameManager, uiManager, playerManager, platformManager), this);
+        pluginManager.registerEvents(new PlayerEventListener(gameManager, uiManager, playerManager, platformManager, lobbyManager), this);
         pluginManager.registerEvents(new SpecialRoundEventListener(), this);
     }
 

@@ -67,6 +67,11 @@ public class UiManager {
             player.showTitle(Title.title(title, subtitle, Title.Times.times(titleFadeInDuration, titlePresentDuration, titleFadeOutDuration)));
         }
     }
+    public void broadcastPlayerLevel(int level) {
+        for (Player player : gameWorld.getPlayers()) {
+            player.setLevel(level);
+        }
+    }
 
     public void sendMessageToPlayerInChat(Player player, String msg) {
         player.sendMessage(msg);
@@ -75,6 +80,11 @@ public class UiManager {
     public void broadcastInChat(String msg) {
         for (Player player : gameWorld.getPlayers()) {
             player.sendMessage(msg);
+        }
+    }
+    public void broadcastInChat(Component textComponent) {
+        for (Player player : gameWorld.getPlayers()) {
+            player.sendMessage(textComponent);
         }
     }
 
