@@ -6,6 +6,9 @@ author: Pine
 api-version: '1.21.4'
 
 commands:
+  bphelp:
+    description: Instructions
+    usage: /bphelp
   bpstart:
     description: Start the game
     usage: /bpstart

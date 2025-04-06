@@ -48,6 +48,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
             case FIREWORK_SHOW -> handleFireworkShow();
             case STATS_SHOW -> handleStatsShow(player);
             case SPAWN_POWERUP -> handleSpawnPowerup();
+            case HELP -> handleHelp(player);
         };
     }
 
@@ -104,6 +105,19 @@ public class CommandManager implements CommandExecutor, TabCompleter {
 
     private boolean handleSpawnPowerup() {
         platformManager.spawnPowerupBlock();
+        return true;
+    }
+
+    private boolean handleHelp(Player player) {
+        final String helpMessage = "---How to play:---\n" +
+                "Stand on the correct color block before the time runs out!\n" +
+                "Watch out for power-ups and special rounds!\n" +
+                "Be the last dancer standing to win!\n" +
+                "---Commands---\n" +
+                "/bpstart - Start the game\n" +
+                "/bpstats - See your statistics\n" +
+                "/bphelp  - See this information";
+        uiManager.sendMessageToPlayerInChat(player, helpMessage);
         return true;
     }
 }

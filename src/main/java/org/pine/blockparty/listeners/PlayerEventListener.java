@@ -43,6 +43,7 @@ public class PlayerEventListener implements Listener {
 
         playerManager.initializePlayerOnJoin(player);
         uiManager.initializeUiForPlayer(player, gameManager.getCurrentRound());
+        uiManager.sendMessageToPlayerInChat(player, "Welcome to Blockparty! Type /bphelp for more information.");
     }
 
     @EventHandler

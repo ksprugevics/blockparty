@@ -23,7 +23,7 @@ public class PlatformManager {
     public static final short Z_MIN = 0;
     public static final short Z_MAX = 31;
     public static final short Y_LVL = 0;
-    public static final short FALL_THRESHOLD_Y = -5;
+    public static final short FALL_THRESHOLD_Y = -4;
 
     private static final short RGB_MAX = 256;
 

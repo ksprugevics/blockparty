@@ -10,7 +10,8 @@ public enum Command {
     SET_ARENA      ("bplvl"),
     FIREWORK_SHOW  ("bpfw"),
     STATS_SHOW     ("bpstats"),
-    SPAWN_POWERUP  ("bppower");
+    SPAWN_POWERUP  ("bppower"),
+    HELP           ("bphelp");
 
     private final String triggerKeyword;
 
