@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+import static org.pine.blockparty.configuration.Configuration.POWER_UP_CHANCE_DENOMINATOR;
+import static org.pine.blockparty.configuration.Configuration.SPECIAL_ROUND_CHANCE_DENOMINATOR;
 import static org.pine.blockparty.model.Difficulty.DIFFICULTY_0;
 import static org.pine.blockparty.model.Difficulty.DIFFICULTY_1;
 import static org.pine.blockparty.model.Difficulty.getNextDifficulty;
@@ -33,11 +35,12 @@ public class GameManager {
     private static final long SECONDS_3_TICKS = 60L;
     private static final long SECONDS_1_TICKS = 20L;
     private static final long SECONDS_0_TICKS = 0L;
-    private static final int POWER_UP_SPAWNING_RATE_ROUNDS = 3;
-    private static final int SPECIAL_ROUND_OCCURRENCE_EACH_ROUNDS = 2;
 
     private static final Logger logger = LoggerFactory.getLogger(GameManager.class);
     private static final Random random = new Random();
+
+    private final int powerUpSpawningChanceDenominator;
+    private final int specialRoundOccurrenceChanceDenominator;
 
     private final World gameWorld;
     private final Blockparty plugin;
@@ -56,8 +59,10 @@ public class GameManager {
     private boolean isSinglePlayerMode = false;
     private SpecialRound specialRound;
 
+
     public GameManager(World gameWorld, ArenaManager arenaManager, UiManager uiManager, PlatformManager platformManager,
-                       PlayerManager playerManager, SoundManager soundManager, StatsManager statsManager, Blockparty plugin) {
+                       PlayerManager playerManager, SoundManager soundManager, StatsManager statsManager,
+                       ConfigurationManager configurationManager, Blockparty plugin) {
         this.plugin = plugin;
         this.arenaManager = arenaManager;
         this.uiManager = uiManager;
@@ -66,6 +71,9 @@ public class GameManager {
         this.soundManager = soundManager;
         this.statsManager = statsManager;
         this.gameWorld = gameWorld;
+
+        this.powerUpSpawningChanceDenominator = Integer.parseInt(configurationManager.getConfigurationValue(POWER_UP_CHANCE_DENOMINATOR));
+        this.specialRoundOccurrenceChanceDenominator = Integer.parseInt(configurationManager.getConfigurationValue(SPECIAL_ROUND_CHANCE_DENOMINATOR));
 
         platformManager.platformToPattern(arenaManager.getStartingArena().pattern());
     }
@@ -185,7 +193,7 @@ public class GameManager {
     }
 
     private void handlePowerUpSpawn() {
-        if (random.nextInt(POWER_UP_SPAWNING_RATE_ROUNDS) == 0) {
+        if (random.nextInt(powerUpSpawningChanceDenominator) == 0) {
             spawnPowerup();
         }
     }
@@ -196,7 +204,7 @@ public class GameManager {
     }
 
     private void handleSpecialRoundTrigger() {
-        if (random.nextInt(SPECIAL_ROUND_OCCURRENCE_EACH_ROUNDS) == 0) {
+        if (random.nextInt(specialRoundOccurrenceChanceDenominator) == 0) {
             startSpecialRound();
         }
     }

@@ -12,6 +12,7 @@ import org.pine.blockparty.model.powerups.effects.PowerUpEffectFactory;
 
 public class PowerUp {
 
+    private static final int PARTICLE_COUNT = 30;
     private final Block block;
     private final PowerUpEffect powerUpEffect;
 
@@ -36,7 +37,7 @@ public class PowerUp {
 
     private void spawnParticles(Block block) {
         final World world = Bukkit.getWorld(Configuration.WORLD_NAME.getDefaultValue());
-        for (int i = 0; i < 30; i++) {
+        for (int i = 0; i < PARTICLE_COUNT; i++) {
             final Location particleLocation = block.getLocation().clone().add(0.5, i * 0.1 + 1, 0.5);
             world.spawnParticle(Particle.HAPPY_VILLAGER, particleLocation, 1, 0, 0, 0, 0.1);
         }

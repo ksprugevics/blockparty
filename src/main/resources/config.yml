@@ -1,3 +1,5 @@
 arena-file-path: "plugins/blockparty/levels.json"
 stats-file-path: "plugins/blockparty/stats.json"
 world-name: "world"
+power-up-chance-denominator: "3"
+special-round-chance-denominator: "2"

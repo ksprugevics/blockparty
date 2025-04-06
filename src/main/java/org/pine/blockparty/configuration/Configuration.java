@@ -2,9 +2,11 @@ package org.pine.blockparty.configuration;
 
 public enum Configuration {
 
-    ARENA_FILE_PATH      ("arena-file-path", ""),
-    STATISTICS_FILE_PATH ("stats-file-path", "plugins/blockparty/stats.json"),
-    WORLD_NAME           ("world-name", "world");
+    ARENA_FILE_PATH                  ("arena-file-path", ""),
+    STATISTICS_FILE_PATH             ("stats-file-path", "plugins/blockparty/stats.json"),
+    WORLD_NAME                       ("world-name", "world"),
+    POWER_UP_CHANCE_DENOMINATOR      ("power-up-chance-denominator", "3"),
+    SPECIAL_ROUND_CHANCE_DENOMINATOR ("special-round-chance-denominator", "2");
 
     private final String key;
     private final String defaultValue;

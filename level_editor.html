@@ -93,7 +93,6 @@
 <textarea id="output" readonly placeholder="Export will appear here"></textarea>
 
 <script>
-    // Minecraft concrete colors
     const concreteColors = [
         'WHITE', 'LIGHT_GRAY', 'GRAY', 'BLACK',
         'BROWN', 'RED', 'ORANGE', 'YELLOW',
@@ -125,7 +124,6 @@
     const gridCont = document.getElementById('grid-container');
     const grid = [];
 
-    // Create color palette and dropdowns
     function createColorPalette() {
         const paletteCont = document.getElementById('color-palette');
         const replaceFromSelect = document.getElementById('replace-from-select');
@@ -136,7 +134,6 @@
         replaceToSelect.innerHTML = '';
 
         concreteColors.forEach(color => {
-            // Color Palette
             const colorEl = document.createElement('div');
             colorEl.className = 'color-option';
             colorEl.style.backgroundColor = colorMap[color];
@@ -151,7 +148,6 @@
 
             colorEl.addEventListener('click', (e) => {
                 if (e.button === 0 || e.type === 'click') {
-                    // Left click handler
                     document.querySelectorAll('.color-option').forEach(el =>
                         el.classList.remove('left-selected'));
                     colorEl.classList.add('left-selected');
@@ -161,7 +157,6 @@
 
             colorEl.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
-                // Right click handler
                 document.querySelectorAll('.color-option').forEach(el =>
                     el.classList.remove('right-selected'));
                 colorEl.classList.add('right-selected');
@@ -170,13 +165,11 @@
 
             paletteCont.appendChild(colorEl);
 
-            // Replace From Dropdown
             const fromOption = document.createElement('option');
             fromOption.value = color;
             fromOption.textContent = color;
             replaceFromSelect.appendChild(fromOption);
 
-            // Replace To Dropdown
             const toOption = document.createElement('option');
             toOption.value = color;
             toOption.textContent = color;
@@ -184,7 +177,6 @@
         });
     }
 
-    // Create grid
     function createGrid() {
         gridCont.innerHTML = '';
         grid.length = 0;
@@ -202,11 +194,9 @@
                 cell.addEventListener('mousedown', (e) => {
                     let colorToUse, colorName;
                     if (e.button === 0) {
-                        // Left click
                         colorToUse = colorMap[leftSelectedColor];
                         colorName = leftSelectedColor;
                     } else if (e.button === 2) {
-                        // Right click
                         colorToUse = colorMap[rightSelectedColor];
                         colorName = rightSelectedColor;
                     }
@@ -224,17 +214,14 @@
 
                 cell.addEventListener('mousemove', (e) => {
                     if (e.buttons === 1) {
-                        // Left mouse button
                         cell.style.backgroundColor = colorMap[leftSelectedColor];
                         cell.dataset.color = `${leftSelectedColor}_CONCRETE`;
                     } else if (e.buttons === 2) {
-                        // Right mouse button
                         cell.style.backgroundColor = colorMap[rightSelectedColor];
                         cell.dataset.color = `${rightSelectedColor}_CONCRETE`;
                     }
                 });
 
-                // Prevent context menu on right-click
                 cell.addEventListener('contextmenu', (e) => {
                     e.preventDefault();
                 });
@@ -246,7 +233,6 @@
         }
     }
 
-    // Initialize replace button
     function setupReplaceButton() {
         const replaceBtn = document.getElementById('replace-btn');
         const replaceFromSelect = document.getElementById('replace-from-select');
@@ -269,14 +255,12 @@
         });
     }
 
-    // Modify the initial setup
     function initializeEditor() {
         createColorPalette();
         createGrid();
         setupReplaceButton();
     }
 
-    // Reset button
     document.getElementById('reset-btn').addEventListener('click', () => {
         grid.forEach(row => {
             row.forEach(cell => {
@@ -286,7 +270,6 @@
         });
     });
 
-    // Import button
     document.getElementById('import-btn').addEventListener('click', () => {
         const importInput = document.getElementById('import-input');
         try {
@@ -319,7 +302,6 @@
         }
     });
 
-    // Save button
     document.getElementById('save-btn').addEventListener('click', () => {
         const blockGrid = grid.map(row =>
             row.map(cell =>
@@ -342,7 +324,6 @@
             JSON.stringify(exportObj);
     });
 
-    // Call initialization on page load
     initializeEditor();
 </script>
 </body>

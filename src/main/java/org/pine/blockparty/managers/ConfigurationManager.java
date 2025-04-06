@@ -18,7 +18,7 @@ public class ConfigurationManager {
             throw new ConfigurationMissingException("Configuration enum is null");
         }
 
-        String value = fileConfiguration.getString(configuration.getKey());
+        final String value = fileConfiguration.getString(configuration.getKey());
 
         if (!StringUtils.isEmpty(value)) {
             return value;

@@ -21,9 +21,9 @@ import org.pine.blockparty.managers.UiManager;
 import org.pine.blockparty.model.TeleportLocation;
 import org.pine.blockparty.model.powerups.PowerUp;
 
-public class PlayerEventListener implements Listener {
+import static org.pine.blockparty.managers.PlatformManager.FALL_THRESHOLD_Y;
 
-    private static final int FALL_THRESHOLD_Y = -5;
+public class PlayerEventListener implements Listener {
 
     private final GameManager gameManager;
     private final UiManager uiManager;

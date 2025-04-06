@@ -107,7 +107,7 @@ public class Blockparty extends JavaPlugin {
 
     private void initializeGameManager() {
         this.gameManager = new GameManager(gameWorld, arenaManager, uiManager, platformManager, playerManager,
-                soundManager, statsManager, this);
+                soundManager, statsManager, configurationManager, this);
     }
 
     private void initializeUiManager() {
