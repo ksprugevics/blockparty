@@ -103,6 +103,9 @@ public class UiManager {
             case 4 -> soundManager.playSoundEffectForAllPlayers(SoundEffect.DINK1);
             case 2 -> soundManager.playSoundEffectForAllPlayers(SoundEffect.DINK2);
             case 0 -> soundManager.playSoundEffectForAllPlayers(SoundEffect.DINK3);
+            default -> {
+                // no logic
+            }
         }
 
         final Component actionBarText = join(JoinConfiguration.noSeparators(),
@@ -114,9 +117,7 @@ public class UiManager {
             player.sendActionBar(actionBarText);
         }
 
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            colorCountdown(counter - 1, xBlockColorLabel, plugin);
-        }, COLOR_BAR_INTERVAL_TICKS);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> colorCountdown(counter - 1, xBlockColorLabel, plugin), COLOR_BAR_INTERVAL_TICKS);
     }
 
     public void updateScoreboardEntire(int playersLeft, int round, String roundSpeed, String songPlaying) {

@@ -21,6 +21,8 @@ public enum Music {
     OTHERSIDE ("Otherside", "minecraft:music_disc.otherside", 0.75F, 1.0f, 3900 + 60),
     RELIC     ("Relic",     "minecraft:music_disc.relic",     0.75F, 1.0f, 4360 + 60);
 
+    private static final Random random = new Random();
+
     private final String title;
     private final Sound sound;
     private final int lengthInTicks;
@@ -45,6 +47,6 @@ public enum Music {
     }
 
     public static Music getRandomSong() {
-        return Music.values()[new Random().nextInt(Music.values().length)];
+        return Music.values()[random.nextInt(Music.values().length)];
     }
 }

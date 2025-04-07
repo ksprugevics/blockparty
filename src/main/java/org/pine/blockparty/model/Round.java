@@ -9,6 +9,8 @@ import java.util.Random;
 
 public class Round {
 
+    private static final Random random = new Random();
+
     private final Arena arena;
     private final XBlock xBlock;
     private final List<Player> participants;
@@ -43,7 +45,6 @@ public class Round {
     }
 
     private XBlock selectXBlock() {
-        final Random random = new Random();
         final List<Material> levelBlocks = this.arena.uniqueBlocks();
         return XBlock.fromMaterial(levelBlocks.get(random.nextInt(levelBlocks.size())));
     }
