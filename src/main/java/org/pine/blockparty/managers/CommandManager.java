@@ -60,7 +60,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         if (mapFromBukkitCommand(command).equals(SET_ARENA) && args.length == 1) {
             return arenaManager.getArenaList().stream().map(Arena::name)
                     .filter(name -> name.toLowerCase().startsWith(args[0].toLowerCase()))
-                    .collect(Collectors.toList());
+                    .toList();
         }
         return List.of();
     }
@@ -112,14 +112,18 @@ public class CommandManager implements CommandExecutor, TabCompleter {
     }
 
     private boolean handleHelp(Player player) {
-        final String helpMessage = "---How to play:---\n" +
-                "Stand on the correct color block before the time runs out!\n" +
-                "Watch out for power-ups and special rounds!\n" +
-                "Be the last dancer standing to win!\n \n" +
-                "---Commands---\n" +
-                "/bpstats - See your statistics\n" +
-                "/bpspec  - Toggle spectator mode\n" +
-                "/bphelp  - See this information";
+        final String helpMessage = """
+                ---How to play:---
+                Stand on the correct color block before the time runs out!
+                Watch out for power-ups and special rounds!
+                Be the last dancer standing to win!
+                
+                ---Commands---
+                /bpstats - See your statistics
+                /bpspec  - Toggle spectator mode
+                /bphelp  - See this information
+                """;
+
         uiManager.sendMessageToPlayerInChat(player, helpMessage);
         return true;
     }

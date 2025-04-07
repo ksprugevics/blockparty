@@ -29,13 +29,14 @@ public class RandomTeleportationSpecialRound implements SpecialRound {
             createTeleportationTasks(world, playersLeft, plugin, INITIAL_DELAY_TICKS);
         }
 
-        for (int i = 0; i < teleportCount; i++) {
+        for (long i = 0; i < teleportCount; i++) {
             createTeleportationTasks(world, playersLeft, plugin, INITIAL_DELAY_TICKS + i * TELEPORTATION_INTERVAL_TICKS);
         }
     }
 
     @Override
     public void stop(World world, List<Player> player, long roundDurationInTicks, Plugin plugin) {
+        // no logic
     }
 
     private void createTeleportationTasks(World world, List<Player> playersLeft, Plugin plugin, long delay) {

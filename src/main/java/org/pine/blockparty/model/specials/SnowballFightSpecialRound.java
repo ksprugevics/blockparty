@@ -27,6 +27,7 @@ public class SnowballFightSpecialRound implements SpecialRound {
 
     @Override
     public void stop(World world, List<Player> playersLeft, long roundDurationInTicks, Plugin plugin) {
+        // no logic
     }
 
     private void playSound(List<Player> players) {

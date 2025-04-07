@@ -5,7 +5,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
-import org.checkerframework.checker.units.qual.A;
 import org.pine.blockparty.Blockparty;
 import org.pine.blockparty.exceptions.BlockpartyException;
 import org.pine.blockparty.model.Difficulty;
@@ -165,7 +164,9 @@ public class GameManager {
         playerManager.teleportPlayersToStartingPlatform(initialParticipants);
 
         currentRound = new Round(arenaManager.getStartingArena(), DIFFICULTY_1, initialParticipants);
-        logger.info("Starting game with players: {}", initialParticipants.stream().map(Player::getName).collect(Collectors.joining(", ")));
+        if (logger.isInfoEnabled()) {
+            logger.info("Starting game with players: {}", initialParticipants.stream().map(Player::getName).collect(Collectors.joining(", ")));
+        }
         playRandomSong();
         uiManager.updateScoreboardEntire(initialParticipants.size(), currentRound.getDifficulty().getCounter(), currentRound.getDifficulty().getDurationInSecondsLabel(), currentSong.getTitle());
         uiManager.updateBossBar(Component.text("Preparing").color(XBlock.WHITE.getDisplayText().color()));
@@ -324,8 +325,9 @@ public class GameManager {
         currentRound = new Round(arenaManager.getRandomArena(), nextDifficulty, roundParticipants);
 
         logger.info("Increasing speed level to: {}", nextDifficulty.getDurationInSecondsLabel());
-        logger.info("Participants left: {}", roundParticipants.stream().map(Player::getName).collect(Collectors.joining(", ")));
-
+        if (logger.isInfoEnabled()) {
+            logger.info("Participants left: {}", roundParticipants.stream().map(Player::getName).collect(Collectors.joining(", ")));
+        }
         uiManager.updateScoreboardRoundParticipants(roundParticipants.size());
         uiManager.updateScoreboardRoundInfo(nextDifficulty.getCounter(), nextDifficulty.getDurationInSecondsLabel());
 

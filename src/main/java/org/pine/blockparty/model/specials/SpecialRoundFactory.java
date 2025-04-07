@@ -1,9 +1,15 @@
 package org.pine.blockparty.model.specials;
 
+import org.pine.blockparty.exceptions.BlockpartyException;
+
 import java.util.List;
 import java.util.Random;
 
 public class SpecialRoundFactory {
+
+    private SpecialRoundFactory() {
+        throw new BlockpartyException();
+    }
 
     private static final List<SpecialRound> SPECIAL_ROUNDS = List.of(
             new AcidRainSpecialRound(),

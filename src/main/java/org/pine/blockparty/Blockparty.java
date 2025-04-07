@@ -81,11 +81,11 @@ public class Blockparty extends JavaPlugin {
     }
 
     private void initializeWorld() {
-        final World gameWorld = Bukkit.getWorld(configurationManager.getConfigurationValue(Configuration.WORLD_NAME));
-        if (gameWorld == null) {
+        final World world = Bukkit.getWorld(configurationManager.getConfigurationValue(Configuration.WORLD_NAME));
+        if (world == null) {
             throw new WorldNullException();
         }
-        this.gameWorld = gameWorld;
+        this.gameWorld = world;
     }
 
     private void initializeArenaManager() throws ArenaLoadException {
